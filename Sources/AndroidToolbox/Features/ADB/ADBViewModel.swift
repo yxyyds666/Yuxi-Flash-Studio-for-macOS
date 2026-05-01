@@ -40,9 +40,9 @@ final class ADBViewModel {
             let list = try service.listDevices()
             devices = list.devices
             selectedDevice = list.devices.first ?? .disconnected
-            appendLog("[devices] refreshed: \(list.devices.count) device(s)")
+            appendLog("[设备] 刷新完成：共 \(list.devices.count) 台")
         } catch {
-            appendLog("[devices] error: \(error.localizedDescription)")
+            appendLog("[设备] 刷新失败：\(error.localizedDescription)")
         }
     }
 
@@ -50,9 +50,9 @@ final class ADBViewModel {
         guard !shellCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         do {
             let result = try service.runShell(shellCommand)
-            appendLog("[shell] \(shellCommand)\n\(result)")
+            appendLog("[Shell] \(shellCommand)\n\(result)")
         } catch {
-            appendLog("[shell] error: \(error.localizedDescription)")
+            appendLog("[Shell] 执行失败：\(error.localizedDescription)")
         }
     }
 
@@ -60,9 +60,9 @@ final class ADBViewModel {
         guard !apkPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         do {
             let result = try service.install(apkPath: apkPath)
-            appendLog("[install] \(apkPath)\n\(result)")
+            appendLog("[安装] \(apkPath)\n\(result)")
         } catch {
-            appendLog("[install] error: \(error.localizedDescription)")
+            appendLog("[安装] 失败：\(error.localizedDescription)")
         }
     }
 
@@ -70,9 +70,9 @@ final class ADBViewModel {
         guard !pullRemotePath.isEmpty, !pullLocalPath.isEmpty else { return }
         do {
             let result = try service.pull(remotePath: pullRemotePath, localPath: pullLocalPath)
-            appendLog("[pull] \(pullRemotePath) -> \(pullLocalPath)\n\(result)")
+            appendLog("[拉取] \(pullRemotePath) -> \(pullLocalPath)\n\(result)")
         } catch {
-            appendLog("[pull] error: \(error.localizedDescription)")
+            appendLog("[拉取] 失败：\(error.localizedDescription)")
         }
     }
 
@@ -80,18 +80,18 @@ final class ADBViewModel {
         guard !pushLocalPath.isEmpty, !pushRemotePath.isEmpty else { return }
         do {
             let result = try service.push(localPath: pushLocalPath, remotePath: pushRemotePath)
-            appendLog("[push] \(pushLocalPath) -> \(pushRemotePath)\n\(result)")
+            appendLog("[推送] \(pushLocalPath) -> \(pushRemotePath)\n\(result)")
         } catch {
-            appendLog("[push] error: \(error.localizedDescription)")
+            appendLog("[推送] 失败：\(error.localizedDescription)")
         }
     }
 
     func reboot(to target: ADBRebootTarget, label: String) {
         do {
             let result = try service.reboot(target)
-            appendLog("[reboot] \(label)\n\(result)")
+            appendLog("[重启] \(label)\n\(result)")
         } catch {
-            appendLog("[reboot] \(label) error: \(error.localizedDescription)")
+            appendLog("[重启] \(label) 失败：\(error.localizedDescription)")
         }
     }
 

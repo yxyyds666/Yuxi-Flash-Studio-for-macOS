@@ -1,19 +1,41 @@
 import SwiftUI
+import AppKit
 
 struct HeaderView: View {
+    private var appIcon: NSImage? {
+        guard let url = Bundle.module.url(forResource: "app-icon", withExtension: "png") else { return nil }
+        return NSImage(contentsOf: url)
+    }
+
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "shippingbox.circle.fill")
-                .font(.system(size: 28))
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(.white, .pink)
+            if let appIcon {
+                Image(nsImage: appIcon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                Image(systemName: "shippingbox.circle.fill")
+                    .font(.system(size: 28))
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, .pink)
+            }
             VStack(alignment: .leading, spacing: 2) {
-                Text("安卓刷机工具箱")
+                Text("Yuxi Flash Studio")
                     .font(.title3.bold())
                 Text("ADB · Fastboot · EDL")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            Button {
+                NSApp.orderFrontStandardAboutPanel(nil)
+                NSApp.activate(ignoringOtherApps: true)
+            } label: {
+                Label("应用信息", systemImage: "info.circle")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.bordered)
             Spacer()
         }
         .padding(.horizontal, 16)

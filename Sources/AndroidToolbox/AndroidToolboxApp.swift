@@ -1,9 +1,17 @@
 import SwiftUI
+import AppKit
 
 @main
 struct AndroidToolboxApp: App {
+    init() {
+        if let url = Bundle.module.url(forResource: "app-icon", withExtension: "png"),
+           let icon = NSImage(contentsOf: url) {
+            NSApplication.shared.applicationIconImage = icon
+        }
+    }
+
     var body: some Scene {
-        WindowGroup("安卓刷机工具箱") {
+        WindowGroup("Yuxi Flash Studio") {
             AppShellView()
                 .frame(minWidth: 1100, minHeight: 720)
         }
