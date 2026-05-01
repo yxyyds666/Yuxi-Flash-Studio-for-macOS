@@ -6,7 +6,7 @@ struct HeaderView: View {
             Image(systemName: "shippingbox.circle.fill")
                 .font(.system(size: 28))
                 .symbolRenderingMode(.palette)
-                .foregroundStyle(.white, .blue)
+                .foregroundStyle(.white, .pink)
             VStack(alignment: .leading, spacing: 2) {
                 Text("安卓刷机工具箱")
                     .font(.title3.bold())

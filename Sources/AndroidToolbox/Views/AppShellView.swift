@@ -9,7 +9,7 @@ struct AppShellView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color.cyan.opacity(0.18), Color.blue.opacity(0.10), Color.black.opacity(0.16)],
+                colors: [Color.pink.opacity(0.24), Color.purple.opacity(0.12), Color.black.opacity(0.14)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -34,6 +34,7 @@ struct AppShellView: View {
             .padding(10)
         }
         .background(WindowConfigurator())
+        .tint(.pink)
     }
 
     @ViewBuilder
