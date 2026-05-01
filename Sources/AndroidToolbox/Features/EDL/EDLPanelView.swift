@@ -21,15 +21,6 @@ struct EDLPanelView: View {
                 }
             }
 
-            GroupBox("日志") {
-                ScrollView {
-                    Text(viewModel.logs.isEmpty ? "暂无日志" : viewModel.logs)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .textSelection(.enabled)
-                }
-                .frame(minHeight: 220)
-            }
-
             Spacer()
         }
         .padding(20)

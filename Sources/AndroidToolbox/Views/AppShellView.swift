@@ -2,9 +2,19 @@ import SwiftUI
 
 struct AppShellView: View {
     @State private var mode: ToolboxMode = .adb
-    @State private var adbViewModel = ADBViewModel()
-    @State private var fastbootViewModel = FastbootViewModel()
-    @State private var edlViewModel = EDLViewModel()
+    @State private var expandedSection: ToolboxSidebarSection = .adb
+    @State private var appLogStore = AppLogStore()
+    @State private var adbViewModel: ADBViewModel
+    @State private var fastbootViewModel: FastbootViewModel
+    @State private var edlViewModel: EDLViewModel
+
+    init() {
+        let logStore = AppLogStore()
+        _appLogStore = State(initialValue: logStore)
+        _adbViewModel = State(initialValue: ADBViewModel(appLogStore: logStore))
+        _fastbootViewModel = State(initialValue: FastbootViewModel(appLogStore: logStore))
+        _edlViewModel = State(initialValue: EDLViewModel(appLogStore: logStore))
+    }
 
     var body: some View {
         ZStack {
@@ -17,11 +27,20 @@ struct AppShellView: View {
 
             VStack(spacing: 12) {
                 HeaderView()
+
                 HStack(alignment: .top, spacing: 12) {
-                    mainPanel
+                    VStack(spacing: 12) {
+                        mainPanel
+                            .frame(maxHeight: .infinity)
+
+                        GlobalLogConsoleView(logStore: appLogStore)
+                            .frame(height: 230)
+                    }
+
                     rightSidebar
                         .frame(width: 300)
                 }
+                .frame(maxHeight: .infinity)
             }
             .padding(14)
             .background(LiquidGlassTheme.panelBackground)
@@ -51,7 +70,7 @@ struct AppShellView: View {
     private var rightSidebar: some View {
         VStack(spacing: 12) {
             DeviceStatusCardView(device: currentDevice)
-            ModeSidebarView(mode: $mode)
+            ModeSidebarView(mode: $mode, expandedSection: $expandedSection)
             Spacer()
         }
     }

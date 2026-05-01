@@ -2,6 +2,7 @@ import Foundation
 import Observation
 
 @Observable
+@MainActor
 final class FastbootViewModel {
     var devices: [DeviceInfo] = []
     var selectedDevice: DeviceInfo = .disconnected
@@ -9,9 +10,11 @@ final class FastbootViewModel {
     var logs: String = ""
 
     private let service: FastbootService
+    private let appLogStore: AppLogStore
 
-    init(service: FastbootService = FastbootService()) {
+    init(service: FastbootService = FastbootService(), appLogStore: AppLogStore = AppLogStore()) {
         self.service = service
+        self.appLogStore = appLogStore
     }
 
     func refreshDevices() {
@@ -55,5 +58,6 @@ final class FastbootViewModel {
 
     private func appendLog(_ entry: String) {
         logs = logs.isEmpty ? entry : logs + "\n\n" + entry
+        appLogStore.append(source: "Fastboot", message: entry)
     }
 }

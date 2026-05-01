@@ -9,6 +9,7 @@ struct ADBRebootAction: Identifiable {
 }
 
 @Observable
+@MainActor
 final class ADBViewModel {
     var devices: [DeviceInfo] = []
     var selectedDevice: DeviceInfo = .disconnected
@@ -19,6 +20,7 @@ final class ADBViewModel {
     var pushLocalPath: String = ""
     var pushRemotePath: String = ""
     var logs: String = ""
+    var isAutoRefreshing: Bool = false
 
     let rebootActions: [ADBRebootAction] = [
         .init(title: "重启系统", subtitle: "adb reboot", target: .system),
@@ -30,20 +32,41 @@ final class ADBViewModel {
     ]
 
     private let service: ADBService
+    private var refreshTimer: Timer?
+    private let appLogStore: AppLogStore
 
-    init(service: ADBService = ADBService()) {
+    init(service: ADBService = ADBService(), appLogStore: AppLogStore = AppLogStore()) {
         self.service = service
+        self.appLogStore = appLogStore
     }
 
     func refreshDevices() {
-        do {
-            let list = try service.listDevices()
-            devices = list.devices
-            selectedDevice = list.devices.first ?? .disconnected
-            appendLog("[设备] 刷新完成：共 \(list.devices.count) 台")
-        } catch {
-            appendLog("[设备] 刷新失败：\(error.localizedDescription)")
+        refreshDevices(showLog: true)
+    }
+
+    func startAutoRefresh() {
+        guard refreshTimer == nil else { return }
+
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.2, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.refreshDevices(showLog: false)
+            }
         }
+        timer.tolerance = 0.2
+        refreshTimer = timer
+        isAutoRefreshing = true
+        refreshDevices(showLog: false)
+    }
+
+    func stopAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+        isAutoRefreshing = false
+    }
+
+    func selectDevice(_ device: DeviceInfo) {
+        selectedDevice = device
+        appendLog("[设备] 已切换：\(device.serial)（\(device.model)）")
     }
 
     func executeShell() {
@@ -95,7 +118,29 @@ final class ADBViewModel {
         }
     }
 
+    private func refreshDevices(showLog: Bool) {
+        do {
+            let list = try service.listDevices()
+            devices = list.devices
+
+            if let matched = list.devices.first(where: { $0.serial == selectedDevice.serial }) {
+                selectedDevice = matched
+            } else {
+                selectedDevice = list.devices.first ?? .disconnected
+            }
+
+            if showLog {
+                appendLog("[设备] 刷新完成：共 \(list.devices.count) 台")
+            }
+        } catch {
+            if showLog {
+                appendLog("[设备] 刷新失败：\(error.localizedDescription)")
+            }
+        }
+    }
+
     private func appendLog(_ entry: String) {
         logs = logs.isEmpty ? entry : logs + "\n\n" + entry
+        appLogStore.append(source: "ADB", message: entry)
     }
 }

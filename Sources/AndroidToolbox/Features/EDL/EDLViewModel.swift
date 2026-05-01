@@ -2,6 +2,7 @@ import Foundation
 import Observation
 
 @Observable
+@MainActor
 final class EDLViewModel {
     var devices: [DeviceInfo] = []
     var selectedDevice: DeviceInfo = .disconnected
@@ -9,9 +10,11 @@ final class EDLViewModel {
     var logs: String = ""
 
     private let service: EDLService
+    private let appLogStore: AppLogStore
 
-    init(service: EDLService = EDLService()) {
+    init(service: EDLService = EDLService(), appLogStore: AppLogStore = AppLogStore()) {
         self.service = service
+        self.appLogStore = appLogStore
     }
 
     func refreshDevices() {
@@ -33,5 +36,6 @@ final class EDLViewModel {
 
     private func appendLog(_ entry: String) {
         logs = logs.isEmpty ? entry : logs + "\n\n" + entry
+        appLogStore.append(source: "EDL", message: entry)
     }
 }
