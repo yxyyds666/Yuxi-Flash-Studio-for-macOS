@@ -1,0 +1,46 @@
+import SwiftUI
+
+struct AppShellView: View {
+    @State private var mode: ToolboxMode = .adb
+    @State private var device: DeviceInfo = .disconnected
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HeaderView()
+            HStack(alignment: .top, spacing: 12) {
+                mainPanel
+                rightSidebar
+                    .frame(width: 300)
+            }
+        }
+        .padding(14)
+        .background(.ultraThinMaterial)
+    }
+
+    @ViewBuilder
+    private var mainPanel: some View {
+        switch mode {
+        case .adb:
+            ADBPanelView()
+        case .fastboot, .edl:
+            VStack(alignment: .leading, spacing: 14) {
+                Text(mode.rawValue)
+                    .font(.largeTitle.bold())
+                Text("该模块将复用同一执行框架，在 ADB 完成后接入。")
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+            .padding(20)
+            .background(LiquidGlassTheme.panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+        }
+    }
+
+    private var rightSidebar: some View {
+        VStack(spacing: 12) {
+            DeviceStatusCardView(device: device)
+            ModeSidebarView(mode: $mode)
+            Spacer()
+        }
+    }
+}
