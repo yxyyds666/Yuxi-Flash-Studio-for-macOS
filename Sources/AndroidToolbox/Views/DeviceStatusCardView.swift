@@ -8,8 +8,8 @@ struct DeviceStatusCardView: View {
             Text("Device")
                 .font(.headline)
             Divider()
-            Label(device.state, systemImage: device.state == "device" ? "checkmark.circle.fill" : "bolt.horizontal.circle")
-                .foregroundStyle(device.state == "device" ? .green : .orange)
+            Label(device.state, systemImage: device.isOnline ? "checkmark.circle.fill" : "bolt.horizontal.circle")
+                .foregroundStyle(device.isOnline ? .green : .orange)
             LabeledContent("Serial", value: device.serial)
             LabeledContent("Model", value: device.model)
         }

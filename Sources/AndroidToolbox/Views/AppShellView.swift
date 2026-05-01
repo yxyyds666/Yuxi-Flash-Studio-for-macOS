@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppShellView: View {
     @State private var mode: ToolboxMode = .adb
-    @State private var device: DeviceInfo = .disconnected
+    @State private var adbViewModel = ADBViewModel()
 
     var body: some View {
         VStack(spacing: 12) {
@@ -21,7 +21,7 @@ struct AppShellView: View {
     private var mainPanel: some View {
         switch mode {
         case .adb:
-            ADBPanelView()
+            ADBPanelView(viewModel: adbViewModel)
         case .fastboot, .edl:
             VStack(alignment: .leading, spacing: 14) {
                 Text(mode.rawValue)
@@ -38,7 +38,7 @@ struct AppShellView: View {
 
     private var rightSidebar: some View {
         VStack(spacing: 12) {
-            DeviceStatusCardView(device: device)
+            DeviceStatusCardView(device: adbViewModel.selectedDevice)
             ModeSidebarView(mode: $mode)
             Spacer()
         }
