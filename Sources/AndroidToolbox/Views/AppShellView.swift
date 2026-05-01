@@ -34,7 +34,6 @@ struct AppShellView: View {
             .padding(10)
         }
         .background(WindowConfigurator())
-        .tint(.pink)
     }
 
     @ViewBuilder
