@@ -9,5 +9,7 @@ struct AndroidToolboxApp: App {
         }
         .windowResizability(.contentSize)
         .defaultSize(width: 1280, height: 800)
+        .windowStyle(.hiddenTitleBar)
+        .windowToolbarStyle(.unified)
     }
 }

@@ -33,6 +33,7 @@ struct AppShellView: View {
             .shadow(color: LiquidGlassTheme.shadow, radius: 24, y: 12)
             .padding(10)
         }
+        .background(WindowConfigurator())
     }
 
     @ViewBuilder
