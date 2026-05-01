@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ADBPanelView: View {
     @Bindable var viewModel: ADBViewModel
+    private let rebootColumns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -11,6 +12,36 @@ struct ADBPanelView: View {
                 Spacer()
                 Button("刷新设备") {
                     viewModel.refreshDevices()
+                }
+            }
+
+            GroupBox("快速重启") {
+                LazyVGrid(columns: rebootColumns, spacing: 12) {
+                    ForEach(viewModel.rebootActions) { action in
+                        Button {
+                            viewModel.reboot(to: action.target, label: action.title)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(action.title)
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Text(action.subtitle)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Spacer(minLength: 0)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+                            .padding(14)
+                            .background(LiquidGlassTheme.cardBackground)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                                    .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+                            .shadow(color: LiquidGlassTheme.shadow, radius: 12, y: 4)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
 

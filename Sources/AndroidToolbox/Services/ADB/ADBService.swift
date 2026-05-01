@@ -1,5 +1,14 @@
 import Foundation
 
+enum ADBRebootTarget: String {
+    case system
+    case fastboot
+    case bootloader
+    case edl
+    case recovery
+    case sideload
+}
+
 struct ADBDeviceList {
     let devices: [DeviceInfo]
 }
@@ -35,6 +44,15 @@ final class ADBService {
 
     func push(localPath: String, remotePath: String) throws -> String {
         try run(arguments: ["push", localPath, remotePath])
+    }
+
+    func reboot(_ target: ADBRebootTarget) throws -> String {
+        switch target {
+        case .system:
+            return try run(arguments: ["reboot"])
+        case .fastboot, .bootloader, .edl, .recovery, .sideload:
+            return try run(arguments: ["reboot", target.rawValue])
+        }
     }
 
     private func run(arguments: [String]) throws -> String {
