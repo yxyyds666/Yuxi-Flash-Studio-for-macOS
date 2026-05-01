@@ -9,44 +9,44 @@ struct ADBPanelView: View {
                 Text("ADB")
                     .font(.largeTitle.bold())
                 Spacer()
-                Button("Refresh Devices") {
+                Button("刷新设备") {
                     viewModel.refreshDevices()
                 }
             }
 
-            GroupBox("Shell") {
+            GroupBox("Shell 命令") {
                 HStack {
-                    TextField("input shell command", text: $viewModel.shellCommand)
-                    Button("Run") { viewModel.executeShell() }
+                    TextField("输入 shell 命令", text: $viewModel.shellCommand)
+                    Button("执行") { viewModel.executeShell() }
                 }
             }
 
-            GroupBox("Install APK") {
+            GroupBox("安装 APK") {
                 HStack {
-                    TextField("/path/to/app.apk", text: $viewModel.apkPath)
-                    Button("Install") { viewModel.installApk() }
+                    TextField("/路径/应用.apk", text: $viewModel.apkPath)
+                    Button("安装") { viewModel.installApk() }
                 }
             }
 
-            GroupBox("Pull") {
+            GroupBox("拉取文件 (Pull)") {
                 HStack {
-                    TextField("remote path", text: $viewModel.pullRemotePath)
-                    TextField("local path", text: $viewModel.pullLocalPath)
-                    Button("Pull") { viewModel.pullFile() }
+                    TextField("远端路径", text: $viewModel.pullRemotePath)
+                    TextField("本地路径", text: $viewModel.pullLocalPath)
+                    Button("拉取") { viewModel.pullFile() }
                 }
             }
 
-            GroupBox("Push") {
+            GroupBox("推送文件 (Push)") {
                 HStack {
-                    TextField("local path", text: $viewModel.pushLocalPath)
-                    TextField("remote path", text: $viewModel.pushRemotePath)
-                    Button("Push") { viewModel.pushFile() }
+                    TextField("本地路径", text: $viewModel.pushLocalPath)
+                    TextField("远端路径", text: $viewModel.pushRemotePath)
+                    Button("推送") { viewModel.pushFile() }
                 }
             }
 
-            GroupBox("Logs") {
+            GroupBox("日志") {
                 ScrollView {
-                    Text(viewModel.logs.isEmpty ? "No logs yet" : viewModel.logs)
+                    Text(viewModel.logs.isEmpty ? "暂无日志" : viewModel.logs)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
                 }
@@ -57,7 +57,12 @@ struct ADBPanelView: View {
         }
         .padding(20)
         .background(LiquidGlassTheme.panelBackground)
+        .overlay {
+            RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+        .shadow(color: LiquidGlassTheme.shadow, radius: 18, y: 8)
         .onAppear {
             viewModel.refreshDevices()
         }

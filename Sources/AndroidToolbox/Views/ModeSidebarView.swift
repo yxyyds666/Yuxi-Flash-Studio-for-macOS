@@ -5,7 +5,7 @@ struct ModeSidebarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Mode")
+            Text("功能模式")
                 .font(.headline)
             ForEach(ToolboxMode.allCases) { item in
                 Button {
@@ -20,7 +20,7 @@ struct ModeSidebarView: View {
                     }
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(mode == item ? Color.accentColor.opacity(0.2) : Color.clear)
+                    .background(mode == item ? Color.accentColor.opacity(0.22) : Color.clear)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -28,6 +28,11 @@ struct ModeSidebarView: View {
         }
         .padding(12)
         .background(LiquidGlassTheme.cardBackground)
+        .overlay {
+            RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+        .shadow(color: LiquidGlassTheme.shadow, radius: 14, y: 6)
     }
 }

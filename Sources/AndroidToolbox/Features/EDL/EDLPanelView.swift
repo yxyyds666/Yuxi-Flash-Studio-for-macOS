@@ -9,21 +9,21 @@ struct EDLPanelView: View {
                 Text("EDL (9008)")
                     .font(.largeTitle.bold())
                 Spacer()
-                Button("Probe 9008") {
+                Button("探测 9008") {
                     viewModel.refreshDevices()
                 }
             }
 
-            GroupBox("Raw Command") {
+            GroupBox("原始命令") {
                 HStack {
-                    TextField("e.g. --help", text: $viewModel.rawCommand)
-                    Button("Run") { viewModel.runRawCommand() }
+                    TextField("例如: --help", text: $viewModel.rawCommand)
+                    Button("执行") { viewModel.runRawCommand() }
                 }
             }
 
-            GroupBox("Logs") {
+            GroupBox("日志") {
                 ScrollView {
-                    Text(viewModel.logs.isEmpty ? "No logs yet" : viewModel.logs)
+                    Text(viewModel.logs.isEmpty ? "暂无日志" : viewModel.logs)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
                 }
@@ -34,7 +34,12 @@ struct EDLPanelView: View {
         }
         .padding(20)
         .background(LiquidGlassTheme.panelBackground)
+        .overlay {
+            RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+        .shadow(color: LiquidGlassTheme.shadow, radius: 18, y: 8)
         .onAppear {
             viewModel.refreshDevices()
         }

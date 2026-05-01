@@ -7,16 +7,32 @@ struct AppShellView: View {
     @State private var edlViewModel = EDLViewModel()
 
     var body: some View {
-        VStack(spacing: 12) {
-            HeaderView()
-            HStack(alignment: .top, spacing: 12) {
-                mainPanel
-                rightSidebar
-                    .frame(width: 300)
+        ZStack {
+            LinearGradient(
+                colors: [Color.cyan.opacity(0.18), Color.blue.opacity(0.10), Color.black.opacity(0.16)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 12) {
+                HeaderView()
+                HStack(alignment: .top, spacing: 12) {
+                    mainPanel
+                    rightSidebar
+                        .frame(width: 300)
+                }
             }
+            .padding(14)
+            .background(LiquidGlassTheme.panelBackground)
+            .overlay {
+                RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius + 4, style: .continuous)
+                    .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius + 4, style: .continuous))
+            .shadow(color: LiquidGlassTheme.shadow, radius: 24, y: 12)
+            .padding(10)
         }
-        .padding(14)
-        .background(.ultraThinMaterial)
     }
 
     @ViewBuilder
