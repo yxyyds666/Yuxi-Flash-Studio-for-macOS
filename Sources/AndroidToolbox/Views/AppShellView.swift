@@ -3,6 +3,7 @@ import SwiftUI
 struct AppShellView: View {
     @State private var mode: ToolboxMode = .adb
     @State private var adbViewModel = ADBViewModel()
+    @State private var fastbootViewModel = FastbootViewModel()
 
     var body: some View {
         VStack(spacing: 12) {
@@ -22,11 +23,13 @@ struct AppShellView: View {
         switch mode {
         case .adb:
             ADBPanelView(viewModel: adbViewModel)
-        case .fastboot, .edl:
+        case .fastboot:
+            FastbootPanelView(viewModel: fastbootViewModel)
+        case .edl:
             VStack(alignment: .leading, spacing: 14) {
                 Text(mode.rawValue)
                     .font(.largeTitle.bold())
-                Text("该模块将复用同一执行框架，在 ADB 完成后接入。")
+                Text("该模块将复用同一执行框架，在 ADB/Fastboot 完成后接入。")
                     .foregroundStyle(.secondary)
                 Spacer()
             }
@@ -38,9 +41,20 @@ struct AppShellView: View {
 
     private var rightSidebar: some View {
         VStack(spacing: 12) {
-            DeviceStatusCardView(device: adbViewModel.selectedDevice)
+            DeviceStatusCardView(device: currentDevice)
             ModeSidebarView(mode: $mode)
             Spacer()
+        }
+    }
+
+    private var currentDevice: DeviceInfo {
+        switch mode {
+        case .adb:
+            return adbViewModel.selectedDevice
+        case .fastboot:
+            return fastbootViewModel.selectedDevice
+        case .edl:
+            return .disconnected
         }
     }
 }
