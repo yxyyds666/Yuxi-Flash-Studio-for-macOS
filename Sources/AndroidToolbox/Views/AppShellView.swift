@@ -4,6 +4,7 @@ struct AppShellView: View {
     @State private var mode: ToolboxMode = .adb
     @State private var adbViewModel = ADBViewModel()
     @State private var fastbootViewModel = FastbootViewModel()
+    @State private var edlViewModel = EDLViewModel()
 
     var body: some View {
         VStack(spacing: 12) {
@@ -26,16 +27,7 @@ struct AppShellView: View {
         case .fastboot:
             FastbootPanelView(viewModel: fastbootViewModel)
         case .edl:
-            VStack(alignment: .leading, spacing: 14) {
-                Text(mode.rawValue)
-                    .font(.largeTitle.bold())
-                Text("该模块将复用同一执行框架，在 ADB/Fastboot 完成后接入。")
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .padding(20)
-            .background(LiquidGlassTheme.panelBackground)
-            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+            EDLPanelView(viewModel: edlViewModel)
         }
     }
 
@@ -54,7 +46,7 @@ struct AppShellView: View {
         case .fastboot:
             return fastbootViewModel.selectedDevice
         case .edl:
-            return .disconnected
+            return edlViewModel.selectedDevice
         }
     }
 }
