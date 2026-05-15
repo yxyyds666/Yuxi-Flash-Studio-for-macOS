@@ -10,7 +10,11 @@ struct ProcessRunnerResult {
     let exitCode: Int32
 }
 
-final class ProcessRunner {
+protocol ProcessRunning {
+    func run(executable: URL, arguments: [String], timeout: TimeInterval) throws -> ProcessRunnerResult
+}
+
+final class ProcessRunner: ProcessRunning {
     func run(executable: URL, arguments: [String], timeout: TimeInterval = 20) throws -> ProcessRunnerResult {
         let process = Process()
         process.executableURL = executable

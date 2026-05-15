@@ -18,11 +18,18 @@ enum ADBServiceError: Error {
     case commandFailed(String)
 }
 
-final class ADBService {
-    private let runner: ProcessRunner
+typealias ADBExecutableResolver = () -> URL?
 
-    init(runner: ProcessRunner = ProcessRunner()) {
+final class ADBService {
+    private let runner: any ProcessRunning
+    private let resolveExecutable: ADBExecutableResolver
+
+    init(
+        runner: any ProcessRunning = ProcessRunner(),
+        resolveExecutable: @escaping ADBExecutableResolver = ADBExecutableLocator.locate
+    ) {
         self.runner = runner
+        self.resolveExecutable = resolveExecutable
     }
 
     func listDevices() throws -> ADBDeviceList {
@@ -46,6 +53,11 @@ final class ADBService {
         try run(arguments: ["push", localPath, remotePath])
     }
 
+    func listRemoteDirectory(path: String) throws -> [ADBFileEntry] {
+        let output = try run(arguments: ["shell", "ls", "-a", "-p", path])
+        return parseRemoteEntries(output: output, basePath: path)
+    }
+
     func reboot(_ target: ADBRebootTarget) throws -> String {
         switch target {
         case .system:
@@ -55,12 +67,40 @@ final class ADBService {
         }
     }
 
+    private func parseRemoteEntries(output: String, basePath: String) -> [ADBFileEntry] {
+        output
+            .split(whereSeparator: \ .isNewline)
+            .map(String.init)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .filter { $0 != "." && $0 != ".." }
+            .map { line in
+                let isDirectory = line.hasSuffix("/")
+                let rawName = isDirectory ? String(line.dropLast()) : line
+                let path = joinRemotePath(base: basePath, name: rawName)
+                return ADBFileEntry(path: path, name: rawName, isDirectory: isDirectory)
+            }
+            .sorted { lhs, rhs in
+                if lhs.isDirectory != rhs.isDirectory {
+                    return lhs.isDirectory && !rhs.isDirectory
+                }
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            }
+    }
+
+    private func joinRemotePath(base: String, name: String) -> String {
+        if base == "/" {
+            return "/\(name)"
+        }
+        return base.hasSuffix("/") ? base + name : base + "/" + name
+    }
+
     private func run(arguments: [String]) throws -> String {
-        guard let executable = ADBExecutableLocator.locate() else {
+        guard let executable = resolveExecutable() else {
             throw ADBServiceError.executableMissing
         }
 
-        let result = try runner.run(executable: executable, arguments: arguments)
+        let result = try runner.run(executable: executable, arguments: arguments, timeout: 20)
         guard result.exitCode == 0 else {
             throw ADBServiceError.commandFailed(result.output)
         }
