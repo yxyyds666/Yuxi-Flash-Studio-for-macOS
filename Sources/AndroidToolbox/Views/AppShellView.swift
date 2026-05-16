@@ -2,7 +2,6 @@ import SwiftUI
 
 struct AppShellView: View {
     @State private var mode: ToolboxMode = .adb
-    @State private var expandedSection: ToolboxSidebarSection = .adb
     @State private var appLogStore = AppLogStore()
     @State private var adbViewModel: ADBViewModel
     @State private var fastbootViewModel: FastbootViewModel
@@ -77,7 +76,7 @@ struct AppShellView: View {
                 adbDeviceManagementCard
             }
 
-            ModeSidebarView(mode: $mode, expandedSection: $expandedSection)
+            ModeSidebarView(mode: $mode)
             Spacer()
         }
     }
