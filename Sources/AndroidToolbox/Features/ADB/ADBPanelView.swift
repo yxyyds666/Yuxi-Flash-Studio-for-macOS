@@ -19,6 +19,7 @@ struct ADBPanelView: View {
 
     private let featureColumns = [
         GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
 
