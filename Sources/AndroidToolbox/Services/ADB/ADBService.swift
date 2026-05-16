@@ -60,51 +60,27 @@ final class ADBService: @unchecked Sendable {
     }
 
     func listThirdPartyPackages() throws -> [InstalledApp] {
-        var packages: [String] = []
-        do {
-            let raw = try run(arguments: ["shell", "pm", "list", "packages", "-3"], timeout: 30)
-            packages = raw
-                .split(separator: "\n")
-                .map(String.init)
-                .compactMap { line -> String? in
-                    let trimmed = line.trimmingCharacters(in: .whitespaces)
-                    guard trimmed.hasPrefix("package:") else { return nil }
-                    return String(trimmed.dropFirst("package:".count))
-                }
-        } catch {
-            throw error
-        }
+        let script = """
+        pm list packages -3 | sed 's/package://' | while read pkg; do
+            label=$(dumpsys package "$pkg" 2>/dev/null | grep 'application-label:' | head -1 | sed "s/.*application-label:'//; s/'//")
+            echo "${label:-$pkg}|$pkg"
+        done
+        """
+        let output = try run(arguments: ["shell", script], timeout: 120)
 
-        guard !packages.isEmpty else { return [] }
-
-        let dumpsys: String
-        do {
-            dumpsys = try run(arguments: ["shell", "dumpsys", "package", "packages"], timeout: 120)
-        } catch {
-            return packages.map { InstalledApp(packageName: $0, appName: $0) }
-                .sorted { $0.appName.localizedCaseInsensitiveCompare($1.appName) == .orderedAscending }
-        }
-
-        var labelMap: [String: String] = [:]
-        var currentPkg: String?
-        for line in dumpsys.split(separator: "\n").map(String.init) {
-            let t = line.trimmingCharacters(in: .whitespaces)
-            if t.hasPrefix("Package ["), let open = t.firstIndex(of: "["), let close = t.firstIndex(of: "]") {
-                currentPkg = String(t[t.index(after: open)..<close])
-            } else if t.hasPrefix("application-label:"), let pkg = currentPkg {
-                let label = t
-                    .replacingOccurrences(of: "application-label:", with: "")
-                    .trimmingCharacters(in: .whitespaces)
-                    .replacingOccurrences(of: "'", with: "")
-                labelMap[pkg] = label
-                currentPkg = nil
+        let apps: [InstalledApp] = output
+            .split(separator: "\n")
+            .map(String.init)
+            .compactMap { line -> InstalledApp? in
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard let sep = trimmed.lastIndex(of: "|") else { return nil }
+                let appName = String(trimmed[..<sep]).trimmingCharacters(in: .whitespaces)
+                let pkgName = String(trimmed[trimmed.index(after: sep)...]).trimmingCharacters(in: .whitespaces)
+                guard !pkgName.isEmpty else { return nil }
+                return InstalledApp(packageName: pkgName, appName: appName.isEmpty ? pkgName : appName)
             }
-        }
 
-        return packages.map { pkg in
-            InstalledApp(packageName: pkg, appName: labelMap[pkg] ?? pkg)
-        }
-        .sorted { $0.appName.localizedCaseInsensitiveCompare($1.appName) == .orderedAscending }
+        return apps.sorted { $0.appName.localizedCaseInsensitiveCompare($1.appName) == .orderedAscending }
     }
 
     func grantPermission(packageName: String, permission: String) throws -> String {
