@@ -92,7 +92,7 @@ struct ADBPanelView: View {
     }
 
     private var homeContent: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             rebootSection
 
             featureEntrySection
@@ -148,15 +148,15 @@ struct ADBPanelView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
-            .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
-            .padding(14)
+            .frame(maxWidth: .infinity, minHeight: 108, alignment: .topLeading)
+            .padding(12)
             .background(LiquidGlassTheme.cardBackground)
             .overlay {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
             }
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .shadow(color: LiquidGlassTheme.shadow, radius: 10, y: 3)
+            .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 2)
         }
         .buttonStyle(.plain)
     }
@@ -453,7 +453,7 @@ struct ADBPanelView: View {
                     .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
             }
             .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
-            .shadow(color: LiquidGlassTheme.shadow, radius: 10, y: 3)
+            .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 2)
         }
         .buttonStyle(.plain)
     }

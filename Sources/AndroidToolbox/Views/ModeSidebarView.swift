@@ -11,7 +11,7 @@ struct ModeSidebarView: View {
     @Binding var expandedSection: ToolboxSidebarSection
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("工具箱")
                 .font(.headline)
 
@@ -36,18 +36,18 @@ struct ModeSidebarView: View {
                 items: ["9008 探测", "原始命令"]
             )
         }
-        .padding(12)
+        .padding(10)
         .background(LiquidGlassTheme.cardBackground)
         .overlay {
             RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
-                .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+                .stroke(LiquidGlassTheme.secondaryStroke, lineWidth: 1)
         }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
-        .shadow(color: LiquidGlassTheme.shadow, radius: 14, y: 6)
+        .shadow(color: LiquidGlassTheme.secondaryShadow, radius: 8, y: 3)
     }
 
     private func sectionCard(title: String, section: ToolboxSidebarSection, targetMode: ToolboxMode, items: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Button {
                 mode = targetMode
                 expandedSection = section
@@ -84,7 +84,7 @@ struct ModeSidebarView: View {
         .animation(.easeInOut(duration: 0.2), value: expandedSection)
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(LiquidGlassTheme.stroke.opacity(0.7), lineWidth: 1)
+                .stroke(LiquidGlassTheme.secondaryStroke, lineWidth: 1)
         }
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }

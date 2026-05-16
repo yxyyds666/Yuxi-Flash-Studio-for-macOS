@@ -7,24 +7,26 @@ struct GlobalLogConsoleView: View {
     private let bottomAnchorID = "log-bottom"
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Label("运行日志", systemImage: "text.alignleft")
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                 Spacer()
                 Button("清空") {
                     logStore.clear()
                 }
+                .controlSize(.small)
                 Button("导出日志") {
                     exportLogs()
                 }
+                .controlSize(.small)
             }
 
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         Text(logStore.combinedText.isEmpty ? "暂无运行日志" : logStore.combinedText)
-                            .font(.system(.caption, design: .monospaced))
+                            .font(.system(size: 11, design: .monospaced))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .textSelection(.enabled)
 
@@ -42,14 +44,14 @@ struct GlobalLogConsoleView: View {
                 }
             }
         }
-        .padding(12)
+        .padding(10)
         .background(LiquidGlassTheme.cardBackground)
         .overlay {
             RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
-                .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+                .stroke(LiquidGlassTheme.secondaryStroke, lineWidth: 1)
         }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
-        .shadow(color: LiquidGlassTheme.shadow, radius: 12, y: 6)
+        .shadow(color: LiquidGlassTheme.secondaryShadow, radius: 7, y: 2)
     }
 
     private func scrollToBottom(using proxy: ScrollViewProxy) {

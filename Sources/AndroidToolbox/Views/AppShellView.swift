@@ -25,32 +25,33 @@ struct AppShellView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 HeaderView()
 
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(spacing: 12) {
+                HStack(alignment: .top, spacing: 10) {
+                    VStack(spacing: 10) {
                         mainPanel
                             .frame(maxHeight: .infinity)
+                            .layoutPriority(1)
 
                         GlobalLogConsoleView(logStore: appLogStore)
-                            .frame(height: 230)
+                            .frame(height: 176)
                     }
 
                     rightSidebar
-                        .frame(width: 300)
+                        .frame(width: 276)
                 }
                 .frame(maxHeight: .infinity)
             }
-            .padding(14)
+            .padding(12)
             .background(LiquidGlassTheme.panelBackground)
             .overlay {
                 RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius + 4, style: .continuous)
                     .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
             }
             .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius + 4, style: .continuous))
-            .shadow(color: LiquidGlassTheme.shadow, radius: 24, y: 12)
-            .padding(10)
+            .shadow(color: LiquidGlassTheme.shadow, radius: 18, y: 8)
+            .padding(8)
         }
         .frame(minWidth: 1280, idealWidth: 1280, maxWidth: 1280, minHeight: 860, idealHeight: 860, maxHeight: 860)
         .background(WindowConfigurator())
@@ -69,7 +70,7 @@ struct AppShellView: View {
     }
 
     private var rightSidebar: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             DeviceStatusCardView(device: currentDevice)
 
             if mode == .adb {
@@ -82,7 +83,7 @@ struct AppShellView: View {
     }
 
     private var adbDeviceManagementCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("设备管理")
                     .font(.headline)
@@ -144,14 +145,14 @@ struct AppShellView: View {
                 .frame(maxHeight: 220)
             }
         }
-        .padding(12)
+        .padding(10)
         .background(LiquidGlassTheme.cardBackground)
         .overlay {
             RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
-                .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+                .stroke(LiquidGlassTheme.secondaryStroke, lineWidth: 1)
         }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
-        .shadow(color: LiquidGlassTheme.shadow, radius: 14, y: 6)
+        .shadow(color: LiquidGlassTheme.secondaryShadow, radius: 8, y: 3)
     }
 
     private var currentDevice: DeviceInfo {
