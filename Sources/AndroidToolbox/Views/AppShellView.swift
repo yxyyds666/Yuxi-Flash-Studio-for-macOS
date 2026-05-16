@@ -53,7 +53,7 @@ struct AppShellView: View {
             .shadow(color: LiquidGlassTheme.shadow, radius: 18, y: 8)
             .padding(8)
         }
-        .frame(minWidth: 1280, idealWidth: 1280, maxWidth: 1280, minHeight: 860, idealHeight: 860, maxHeight: 860)
+        .frame(width: 1280, height: 860)
         .background(WindowConfigurator())
     }
 

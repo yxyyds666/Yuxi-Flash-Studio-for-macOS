@@ -13,10 +13,9 @@ struct AndroidToolboxApp: App {
     var body: some Scene {
         WindowGroup("Yuxi Flash Studio") {
             AppShellView()
-                .frame(minWidth: 1100, minHeight: 720)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 1280, height: 800)
+        .defaultSize(width: 1280, height: 860)
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
     }
