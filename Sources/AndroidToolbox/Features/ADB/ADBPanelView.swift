@@ -232,6 +232,27 @@ struct ADBPanelView: View {
     private var transferControlSection: some View {
         GroupBox("传输") {
             VStack(spacing: 12) {
+                Toggle(isOn: Binding(
+                    get: { viewModel.isRootModeEnabled },
+                    set: { viewModel.setRootModeEnabled($0) }
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Root 浏览")
+                            .font(.subheadline.weight(.semibold))
+                        Text("开启后通过 su 浏览 / 与受保护目录")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.switch)
+
+                Text("Root 模式首版仅影响远程目录浏览，Push / Pull 仍使用普通 adb 传输。")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Divider()
+
                 Button("选择本地目录") {
                     viewModel.pickLocalDirectory()
                 }

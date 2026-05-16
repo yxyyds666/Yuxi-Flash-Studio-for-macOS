@@ -113,4 +113,60 @@ func adbService_listRemoteDirectory_parsesAndSortsEntries() throws {
     #expect(entries[0].isDirectory)
     #expect(entries[2].isDirectory == false)
     #expect(entries[0].path == "/sdcard/Download")
+    #expect(runner.capturedArguments == ["shell", "ls", "-a", "-p", "--", "/sdcard"])
+}
+
+@Test
+func adbService_listRemoteDirectory_asRoot_usesSuCommand() throws {
+    let runner = MockProcessRunner()
+    runner.nextResult = .init(output: "", exitCode: 0)
+
+    let service = ADBService(
+        runner: runner,
+        resolveExecutable: { URL(fileURLWithPath: "/tmp/adb") }
+    )
+
+    _ = try service.listRemoteDirectory(path: "/system", asRoot: true)
+
+    #expect(runner.capturedArguments == ["shell", "su", "-c", "ls -a -p -- '/system'"])
+}
+
+@Test
+func adbService_listRemoteDirectory_asRoot_quotesSpecialPath() throws {
+    let runner = MockProcessRunner()
+    runner.nextResult = .init(output: "", exitCode: 0)
+
+    let service = ADBService(
+        runner: runner,
+        resolveExecutable: { URL(fileURLWithPath: "/tmp/adb") }
+    )
+
+    _ = try service.listRemoteDirectory(path: "/data/local/tmp/ab c'd", asRoot: true)
+
+    #expect(runner.capturedArguments == ["shell", "su", "-c", "ls -a -p -- '/data/local/tmp/ab c'\\''d'"])
+}
+
+@Test
+func adbService_listRemoteDirectory_asRoot_propagatesCommandFailure() {
+    let runner = MockProcessRunner()
+    runner.nextResult = .init(output: "su: inaccessible or not found", exitCode: 1)
+
+    let service = ADBService(
+        runner: runner,
+        resolveExecutable: { URL(fileURLWithPath: "/tmp/adb") }
+    )
+
+    do {
+        _ = try service.listRemoteDirectory(path: "/", asRoot: true)
+        Issue.record("Expected commandFailed error")
+    } catch let error as ADBServiceError {
+        switch error {
+        case .commandFailed(let output):
+            #expect(output == "su: inaccessible or not found")
+        case .executableMissing:
+            Issue.record("Expected commandFailed, got executableMissing")
+        }
+    } catch {
+        Issue.record("Unexpected error: \(error)")
+    }
 }

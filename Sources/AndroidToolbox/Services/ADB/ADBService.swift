@@ -53,8 +53,16 @@ final class ADBService {
         try run(arguments: ["push", localPath, remotePath])
     }
 
-    func listRemoteDirectory(path: String) throws -> [ADBFileEntry] {
-        let output = try run(arguments: ["shell", "ls", "-a", "-p", path])
+    func listRemoteDirectory(path: String, asRoot: Bool = false) throws -> [ADBFileEntry] {
+        let arguments: [String]
+        if asRoot {
+            let command = "ls -a -p -- \(shellQuote(path))"
+            arguments = ["shell", "su", "-c", command]
+        } else {
+            arguments = ["shell", "ls", "-a", "-p", "--", path]
+        }
+
+        let output = try run(arguments: arguments)
         return parseRemoteEntries(output: output, basePath: path)
     }
 
@@ -69,7 +77,7 @@ final class ADBService {
 
     private func parseRemoteEntries(output: String, basePath: String) -> [ADBFileEntry] {
         output
-            .split(whereSeparator: \ .isNewline)
+            .split(whereSeparator: \.isNewline)
             .map(String.init)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
@@ -93,6 +101,10 @@ final class ADBService {
             return "/\(name)"
         }
         return base.hasSuffix("/") ? base + name : base + "/" + name
+    }
+
+    private func shellQuote(_ value: String) -> String {
+        "'\(value.replacingOccurrences(of: "'", with: "'\\''"))'"
     }
 
     private func run(arguments: [String]) throws -> String {

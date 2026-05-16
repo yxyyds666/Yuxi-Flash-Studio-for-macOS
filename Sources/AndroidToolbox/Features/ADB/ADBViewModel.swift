@@ -37,6 +37,7 @@ final class ADBViewModel {
     var remoteEntries: [ADBFileEntry] = []
     var selectedLocalPath: String = ""
     var selectedRemotePath: String = ""
+    var isRootModeEnabled: Bool = false
 
     var canPushSelected: Bool {
         guard !selectedLocalPath.isEmpty else { return false }
@@ -95,6 +96,15 @@ final class ADBViewModel {
         refreshRemoteDirectory()
     }
 
+    func setRootModeEnabled(_ isEnabled: Bool) {
+        guard isRootModeEnabled != isEnabled else { return }
+        isRootModeEnabled = isEnabled
+        remoteCurrentPath = isEnabled ? "/" : "/sdcard"
+        selectedRemotePath = ""
+        refreshRemoteDirectory()
+        appendLog(isEnabled ? "[文件管理] 已开启 Root 浏览模式" : "[文件管理] 已关闭 Root 浏览模式")
+    }
+
     func pickLocalDirectory() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
@@ -122,7 +132,7 @@ final class ADBViewModel {
 
     func refreshRemoteDirectory() {
         do {
-            remoteEntries = try service.listRemoteDirectory(path: remoteCurrentPath)
+            remoteEntries = try service.listRemoteDirectory(path: remoteCurrentPath, asRoot: isRootModeEnabled)
             if !selectedRemotePath.isEmpty && remoteEntries.first(where: { $0.path == selectedRemotePath }) == nil {
                 selectedRemotePath = ""
             }
