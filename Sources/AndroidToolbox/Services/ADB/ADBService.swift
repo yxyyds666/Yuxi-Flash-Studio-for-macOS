@@ -60,7 +60,7 @@ final class ADBService: @unchecked Sendable {
     }
 
     func listThirdPartyPackages() throws -> [InstalledApp] {
-        let raw = try run(arguments: ["shell", "pm", "list", "packages", "-3"])
+        let raw = try run(arguments: ["shell", "pm", "list", "packages", "-3"], timeout: 30)
         let packages = raw
             .split(separator: "\n")
             .map(String.init)
@@ -72,7 +72,7 @@ final class ADBService: @unchecked Sendable {
 
         guard !packages.isEmpty else { return [] }
 
-        let dumpsys = try run(arguments: ["shell", "dumpsys", "package", "packages"])
+        let dumpsys = try run(arguments: ["shell", "dumpsys", "package", "packages"], timeout: 60)
         var labelMap: [String: String] = [:]
         var currentPkg: String?
         for line in dumpsys.split(separator: "\n").map(String.init) {
@@ -165,7 +165,7 @@ final class ADBService: @unchecked Sendable {
         "'\(value.replacingOccurrences(of: "'", with: "'\\''"))'"
     }
 
-    private func run(arguments: [String]) throws -> String {
+    private func run(arguments: [String], timeout: TimeInterval = 20) throws -> String {
         guard let executable = resolveExecutable() else {
             throw ADBServiceError.executableMissing
         }
@@ -177,7 +177,7 @@ final class ADBService: @unchecked Sendable {
             effectiveArgs = arguments
         }
 
-        let result = try runner.run(executable: executable, arguments: effectiveArgs, timeout: 20)
+        let result = try runner.run(executable: executable, arguments: effectiveArgs, timeout: timeout)
         guard result.exitCode == 0 else {
             throw ADBServiceError.commandFailed(result.output)
         }
