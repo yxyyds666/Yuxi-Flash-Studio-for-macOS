@@ -70,8 +70,17 @@ struct ADBPanelView: View {
                 Text(titleForRoute(route))
                     .font(.largeTitle.bold())
 
-                if route == .home {
+                switch route {
+                case .home:
                     Text("ADB 主界面")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                case .fileManager:
+                    Text("浏览与传输设备文件")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                case .apkInstall:
+                    Text("选择 APK 文件并安装到设备")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -162,42 +171,75 @@ struct ADBPanelView: View {
     }
 
     private var apkInstallSection: some View {
-        GroupBox("APK 安装") {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 10) {
-                    TextField("选择 APK 文件路径", text: $viewModel.apkPath)
-                        .textFieldStyle(.roundedBorder)
+        VStack(spacing: 0) {
+            Spacer()
 
-                    Button("选择 APK") {
-                        viewModel.pickApkFile()
+            VStack(spacing: 24) {
+                Image(systemName: "square.and.arrow.down.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.green)
+                    .symbolEffect(.bounce, value: viewModel.apkPath)
+
+                Text("安装 APK")
+                    .font(.title2.bold())
+
+                VStack(spacing: 12) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "app.fill")
+                            .foregroundStyle(.secondary)
+                        TextField("点击右侧按钮选择 APK 文件", text: $viewModel.apkPath)
+                            .textFieldStyle(.roundedBorder)
+                            .disabled(true)
+
+                        Button("浏览…") {
+                            viewModel.pickApkFile()
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .buttonStyle(.bordered)
-                }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("当前选择")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(viewModel.apkPath.isEmpty ? "未选择 APK" : viewModel.apkPath)
-                        .font(.caption)
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                        .truncationMode(.middle)
-                }
+                    if !viewModel.apkPath.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .font(.subheadline)
+                            Text(URL(fileURLWithPath: viewModel.apkPath).lastPathComponent)
+                                .font(.subheadline.weight(.medium))
+                            Text(byteCountFormatted(URL(fileURLWithPath: viewModel.apkPath)))
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    }
 
-                Button("安装 APK") {
-                    viewModel.installApk()
+                    Button(action: { viewModel.installApk() }) {
+                        Label("安装", systemImage: "arrow.down.to.line")
+                            .frame(maxWidth: 200)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(viewModel.apkPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(viewModel.apkPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-
-                Text("安装输出会写入下方全局日志。")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(40)
+            .background(LiquidGlassTheme.cardBackground)
+            .overlay {
+                RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                    .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+            .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 2)
+
+            Spacer()
         }
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func byteCountFormatted(_ url: URL) -> String {
+        guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let size = attrs[.size] as? Int64 else { return "" }
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: size)
     }
 
     private var fileManagementSection: some View {
