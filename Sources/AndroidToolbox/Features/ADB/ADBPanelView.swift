@@ -150,34 +150,40 @@ struct ADBPanelView: View {
     }
 
     private var scrcpySection: some View {
-        VStack(spacing: 18) {
-            Spacer(minLength: 0)
-
-            GroupBox {
-                VStack(spacing: 16) {
-                    Image(systemName: "display.2")
-                        .font(.system(size: 36, weight: .semibold))
-                        .foregroundStyle(.blue)
-
-                    Text("scrcpy 设备投屏")
-                        .font(.title3.bold())
-
-                    Text("以低延迟方式镜像 Android 屏幕，可按需调节性能与交互参数")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 8) {
+        GroupBox("scrcpy 投屏") {
+            ScrollView {
+                HStack(alignment: .top, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 10) {
                         Stepper("最大分辨率：\(viewModel.scrcpyMaxSize)", value: $viewModel.scrcpyMaxSize, in: 640...2560, step: 64)
                         Stepper("码率：\(viewModel.scrcpyBitRate) Mbps", value: $viewModel.scrcpyBitRate, in: 2...32)
                         Stepper("最大帧率：\(viewModel.scrcpyMaxFPS) FPS", value: $viewModel.scrcpyMaxFPS, in: 15...120, step: 5)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    TextField("窗口标题", text: $viewModel.scrcpyWindowTitle)
-                        .textFieldStyle(.roundedBorder)
+                        TextField("窗口标题", text: $viewModel.scrcpyWindowTitle)
+                            .textFieldStyle(.roundedBorder)
+
+                        HStack(spacing: 10) {
+                            Button {
+                                viewModel.startScrcpy()
+                            } label: {
+                                Label("启动投屏", systemImage: "play.fill")
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(viewModel.isScrcpyRunning)
+
+                            Button {
+                                viewModel.stopScrcpy()
+                            } label: {
+                                Label("停止投屏", systemImage: "stop.fill")
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(!viewModel.isScrcpyRunning)
+                        }
+
+                        Text(viewModel.isScrcpyRunning ? "投屏进行中" : "当前未投屏")
+                            .font(.caption)
+                            .foregroundStyle(viewModel.isScrcpyRunning ? .green : .secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
 
                     VStack(alignment: .leading, spacing: 8) {
                         Toggle("投屏时关闭手机屏幕", isOn: $viewModel.scrcpyTurnScreenOff)
@@ -188,44 +194,11 @@ struct ADBPanelView: View {
                         Toggle("显示触摸点", isOn: $viewModel.scrcpyShowTouches)
                     }
                     .toggleStyle(.switch)
-
-                    HStack(spacing: 12) {
-                        Button {
-                            viewModel.startScrcpy()
-                        } label: {
-                            Label("启动投屏", systemImage: "play.fill")
-                                .frame(maxWidth: 140)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(viewModel.isScrcpyRunning)
-
-                        Button {
-                            viewModel.stopScrcpy()
-                        } label: {
-                            Label("停止投屏", systemImage: "stop.fill")
-                                .frame(maxWidth: 140)
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(!viewModel.isScrcpyRunning)
-                    }
-
-                    Text(viewModel.isScrcpyRunning ? "投屏进行中" : "当前未投屏")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(viewModel.isScrcpyRunning ? .green : .secondary)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
-                .padding(.vertical, 14)
-                .padding(.horizontal, 6)
+                .padding(.vertical, 6)
             }
-            .frame(maxWidth: 760)
-            .background(LiquidGlassTheme.cardBackground)
-            .overlay {
-                RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
-                    .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
-            .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 3)
-
-            Spacer(minLength: 0)
+            .frame(maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
