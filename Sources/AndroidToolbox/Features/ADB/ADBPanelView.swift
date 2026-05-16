@@ -80,7 +80,7 @@ struct ADBPanelView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 case .appManagement:
-                    Text("安装、卸载应用与管理权限")
+                    Text("安装与卸载应用")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -124,7 +124,7 @@ struct ADBPanelView: View {
 
                 featureTile(
                     title: "应用管理",
-                    subtitle: "安装、卸载、权限管理",
+                    subtitle: "安装与卸载应用",
                     systemImage: "square.and.arrow.down.fill",
                     tint: .green,
                     action: { route = .appManagement }
@@ -171,13 +171,9 @@ struct ADBPanelView: View {
     }
 
     private var appManagementSection: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                installSection
-                uninstallSection
-                permissionSection
-            }
-            .padding(.vertical, 8)
+        HStack(alignment: .top, spacing: 16) {
+            installSection
+            uninstallSection
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -221,10 +217,9 @@ struct ADBPanelView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(viewModel.apkPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
-            .frame(maxWidth: 480)
             .padding(.vertical, 12)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var uninstallSection: some View {
@@ -293,60 +288,16 @@ struct ADBPanelView: View {
                                 }
                             }
                         }
-                        .frame(maxHeight: 160)
+                        .frame(maxHeight: .infinity)
                     }
                 }
                 .padding(10)
                 .background(LiquidGlassTheme.panelBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
-            .frame(maxWidth: 480)
             .padding(.vertical, 8)
         }
-        .frame(maxWidth: .infinity)
-    }
-
-    private var permissionSection: some View {
-        GroupBox {
-            VStack(spacing: 14) {
-                Image(systemName: "checkmark.shield.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.blue)
-                    .padding(.top, 4)
-
-                Text("权限管理")
-                    .font(.headline)
-
-                HStack(spacing: 10) {
-                    TextField("包名", text: $viewModel.permissionPackageName)
-                        .textFieldStyle(.roundedBorder)
-
-                    TextField("权限（如 android.permission.READ_EXTERNAL_STORAGE）", text: $viewModel.permissionName)
-                        .textFieldStyle(.roundedBorder)
-                }
-
-                HStack(spacing: 12) {
-                    Button(action: { viewModel.grantPermission() }) {
-                        Label("授予", systemImage: "checkmark.circle")
-                            .frame(maxWidth: 120)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
-                    .disabled(viewModel.permissionPackageName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.permissionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-
-                    Button(action: { viewModel.revokePermission() }) {
-                        Label("撤销", systemImage: "xmark.circle")
-                            .frame(maxWidth: 120)
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.orange)
-                    .disabled(viewModel.permissionPackageName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.permissionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-            .frame(maxWidth: 480)
-            .padding(.vertical, 12)
-        }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var fileManagementSection: some View {
