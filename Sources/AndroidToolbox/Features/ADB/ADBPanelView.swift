@@ -1,18 +1,32 @@
 import SwiftUI
 
+enum ADBPanelRoute: Hashable {
+    case home
+    case fileManager
+}
+
 struct ADBPanelView: View {
     @Bindable var viewModel: ADBViewModel
-    private let rebootColumns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+    @State private var route: ADBPanelRoute = .home
+
+    private let rebootColumns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10)
+    ]
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                headerRow
-                deviceListSection
-                rebootSection
+        VStack(alignment: .leading, spacing: 12) {
+            headerRow
+
+            switch route {
+            case .home:
+                homeContent
+            case .fileManager:
+                fileManagementSection
             }
-            .padding(20)
         }
+        .padding(20)
         .background(LiquidGlassTheme.panelBackground)
         .overlay {
             RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
@@ -26,22 +40,249 @@ struct ADBPanelView: View {
         .onDisappear {
             viewModel.stopAutoRefresh()
         }
+        .onChange(of: route) { _, newRoute in
+            if newRoute == .fileManager {
+                viewModel.prepareFileManager()
+            }
+        }
     }
 
     private var headerRow: some View {
-        HStack {
-            Text("ADB")
-                .font(.largeTitle.bold())
+        HStack(spacing: 12) {
+            if route != .home {
+                Button {
+                    route = .home
+                } label: {
+                    Label("返回", systemImage: "chevron.left")
+                }
+                .buttonStyle(.bordered)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(titleForRoute(route))
+                    .font(.largeTitle.bold())
+
+                if route == .home {
+                    Text("ADB 主界面")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Spacer()
+
             if viewModel.isAutoRefreshing {
                 Label("实时刷新中", systemImage: "dot.radiowaves.left.and.right")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
+
             Button("刷新设备") {
                 viewModel.refreshDevices()
             }
         }
+    }
+
+    private var homeContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                rebootSection
+
+                featureEntrySection
+
+                deviceListSection
+            }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+    }
+
+    private var featureEntrySection: some View {
+        GroupBox("ADB 功能") {
+            VStack(alignment: .leading, spacing: 10) {
+                Button {
+                    route = .fileManager
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "folder.fill")
+                            .font(.title3)
+                            .foregroundStyle(Color.yellow)
+                            .frame(width: 28)
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("文件管理")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("浏览本地与设备目录，并执行 Push / Pull")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(14)
+                    .background(LiquidGlassTheme.cardBackground)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var fileManagementSection: some View {
+        HStack(alignment: .top, spacing: 12) {
+            fileColumn(
+                title: "本地文件",
+                currentPath: viewModel.localCurrentPath,
+                entries: viewModel.localEntries,
+                selectedPath: viewModel.selectedLocalPath,
+                onOpenParent: viewModel.openLocalParent,
+                onOpenDirectory: viewModel.openLocalDirectory,
+                onSelectEntry: viewModel.selectLocalEntry
+            )
+
+            transferControlSection
+                .frame(width: 190)
+
+            fileColumn(
+                title: "设备文件",
+                currentPath: viewModel.remoteCurrentPath,
+                entries: viewModel.remoteEntries,
+                selectedPath: viewModel.selectedRemotePath,
+                onOpenParent: viewModel.openRemoteParent,
+                onOpenDirectory: viewModel.openRemoteDirectory,
+                onSelectEntry: viewModel.selectRemoteEntry
+            )
+        }
+        .frame(maxHeight: .infinity)
+    }
+
+    private func fileColumn(
+        title: String,
+        currentPath: String,
+        entries: [ADBFileEntry],
+        selectedPath: String,
+        onOpenParent: @escaping () -> Void,
+        onOpenDirectory: @escaping (ADBFileEntry) -> Void,
+        onSelectEntry: @escaping (ADBFileEntry) -> Void
+    ) -> some View {
+        GroupBox(title) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Button("上一级") {
+                        onOpenParent()
+                    }
+                    .buttonStyle(.bordered)
+
+                    Text(currentPath)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+
+                if entries.isEmpty {
+                    Text("当前目录为空")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 6) {
+                            ForEach(entries) { entry in
+                                Button {
+                                    if entry.isDirectory {
+                                        onOpenDirectory(entry)
+                                    } else {
+                                        onSelectEntry(entry)
+                                    }
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: entry.isDirectory ? "folder.fill" : "doc.fill")
+                                            .foregroundStyle(entry.isDirectory ? Color.yellow : Color.blue)
+                                        Text(entry.name)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.primary)
+                                            .lineLimit(1)
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(selectedPath == entry.path ? LiquidGlassTheme.cardBackground : AnyShapeStyle(Color.clear))
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                            .stroke(selectedPath == entry.path ? LiquidGlassTheme.stroke : Color.clear, lineWidth: 1)
+                                    }
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var transferControlSection: some View {
+        GroupBox("传输") {
+            VStack(spacing: 12) {
+                Button("选择本地目录") {
+                    viewModel.pickLocalDirectory()
+                }
+                .buttonStyle(.bordered)
+
+                Button("刷新设备目录") {
+                    viewModel.refreshRemoteDirectory()
+                }
+                .buttonStyle(.bordered)
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("本地选中")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(viewModel.selectedLocalPath.isEmpty ? "未选择" : viewModel.selectedLocalPath)
+                        .font(.caption2)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("设备选中")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(viewModel.selectedRemotePath.isEmpty ? "未选择" : viewModel.selectedRemotePath)
+                        .font(.caption2)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                }
+
+                Divider()
+
+                Button("Push 到设备 →") {
+                    viewModel.pushSelected()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!viewModel.canPushSelected)
+
+                Button("← Pull 到本地") {
+                    viewModel.pullSelected()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!viewModel.canPullSelected)
+            }
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
+        .frame(maxHeight: .infinity)
     }
 
     private var deviceListSection: some View {
@@ -129,6 +370,15 @@ struct ADBPanelView: View {
             .shadow(color: LiquidGlassTheme.shadow, radius: 10, y: 3)
         }
         .buttonStyle(.plain)
+    }
+
+    private func titleForRoute(_ route: ADBPanelRoute) -> String {
+        switch route {
+        case .home:
+            return "ADB"
+        case .fileManager:
+            return "ADB · 文件管理"
+        }
     }
 
     private func isSelected(_ device: DeviceInfo) -> Bool {

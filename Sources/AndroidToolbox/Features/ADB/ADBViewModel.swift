@@ -1,11 +1,20 @@
 import Foundation
 import Observation
+import AppKit
 
 struct ADBRebootAction: Identifiable {
     let id = UUID()
     let title: String
     let subtitle: String
     let target: ADBRebootTarget
+}
+
+struct ADBFileEntry: Identifiable {
+    let path: String
+    let name: String
+    let isDirectory: Bool
+
+    var id: String { path }
 }
 
 @Observable
@@ -21,6 +30,23 @@ final class ADBViewModel {
     var pushRemotePath: String = ""
     var logs: String = ""
     var isAutoRefreshing: Bool = false
+
+    var localCurrentPath: String = NSHomeDirectory()
+    var remoteCurrentPath: String = "/sdcard"
+    var localEntries: [ADBFileEntry] = []
+    var remoteEntries: [ADBFileEntry] = []
+    var selectedLocalPath: String = ""
+    var selectedRemotePath: String = ""
+
+    var canPushSelected: Bool {
+        guard !selectedLocalPath.isEmpty else { return false }
+        return localEntries.first(where: { $0.path == selectedLocalPath })?.isDirectory == false
+    }
+
+    var canPullSelected: Bool {
+        guard !selectedRemotePath.isEmpty else { return false }
+        return remoteEntries.first(where: { $0.path == selectedRemotePath })?.isDirectory == false
+    }
 
     let rebootActions: [ADBRebootAction] = [
         .init(title: "重启系统", subtitle: "adb reboot", target: .system),
@@ -62,6 +88,102 @@ final class ADBViewModel {
         refreshTimer?.invalidate()
         refreshTimer = nil
         isAutoRefreshing = false
+    }
+
+    func prepareFileManager() {
+        refreshLocalDirectory()
+        refreshRemoteDirectory()
+    }
+
+    func pickLocalDirectory() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.canCreateDirectories = true
+        panel.prompt = "打开"
+
+        if panel.runModal() == .OK, let url = panel.url {
+            localCurrentPath = url.path
+            refreshLocalDirectory()
+        }
+    }
+
+    func refreshLocalDirectory() {
+        do {
+            localEntries = try loadLocalEntries(path: localCurrentPath)
+            if !selectedLocalPath.isEmpty && localEntries.first(where: { $0.path == selectedLocalPath }) == nil {
+                selectedLocalPath = ""
+            }
+        } catch {
+            appendLog("[文件管理] 本地目录读取失败：\(error.localizedDescription)")
+        }
+    }
+
+    func refreshRemoteDirectory() {
+        do {
+            remoteEntries = try service.listRemoteDirectory(path: remoteCurrentPath)
+            if !selectedRemotePath.isEmpty && remoteEntries.first(where: { $0.path == selectedRemotePath }) == nil {
+                selectedRemotePath = ""
+            }
+        } catch {
+            appendLog("[文件管理] 设备目录读取失败：\(error.localizedDescription)")
+        }
+    }
+
+    func openLocalParent() {
+        let url = URL(fileURLWithPath: localCurrentPath)
+        let parent = url.deletingLastPathComponent().path
+        guard parent != localCurrentPath else { return }
+        localCurrentPath = parent
+        selectedLocalPath = ""
+        refreshLocalDirectory()
+    }
+
+    func openRemoteParent() {
+        guard remoteCurrentPath != "/" else { return }
+        let parent = (remoteCurrentPath as NSString).deletingLastPathComponent
+        remoteCurrentPath = parent.isEmpty ? "/" : parent
+        selectedRemotePath = ""
+        refreshRemoteDirectory()
+    }
+
+    func openLocalDirectory(_ entry: ADBFileEntry) {
+        guard entry.isDirectory else { return }
+        localCurrentPath = entry.path
+        selectedLocalPath = ""
+        refreshLocalDirectory()
+    }
+
+    func openRemoteDirectory(_ entry: ADBFileEntry) {
+        guard entry.isDirectory else { return }
+        remoteCurrentPath = entry.path
+        selectedRemotePath = ""
+        refreshRemoteDirectory()
+    }
+
+    func selectLocalEntry(_ entry: ADBFileEntry) {
+        selectedLocalPath = entry.path
+    }
+
+    func selectRemoteEntry(_ entry: ADBFileEntry) {
+        selectedRemotePath = entry.path
+    }
+
+    func pushSelected() {
+        guard canPushSelected else { return }
+        pushLocalPath = selectedLocalPath
+        pushRemotePath = joinRemotePath(base: remoteCurrentPath, name: (selectedLocalPath as NSString).lastPathComponent)
+        pushFile()
+        refreshRemoteDirectory()
+    }
+
+    func pullSelected() {
+        guard canPullSelected else { return }
+        pullRemotePath = selectedRemotePath
+        pullLocalPath = joinLocalPath(base: localCurrentPath, name: (selectedRemotePath as NSString).lastPathComponent)
+        pullFile()
+        refreshLocalDirectory()
     }
 
     func selectDevice(_ device: DeviceInfo) {
@@ -137,6 +259,34 @@ final class ADBViewModel {
                 appendLog("[设备] 刷新失败：\(error.localizedDescription)")
             }
         }
+    }
+
+    private func loadLocalEntries(path: String) throws -> [ADBFileEntry] {
+        let keys: [URLResourceKey] = [.isDirectoryKey]
+        let urls = try FileManager.default.contentsOfDirectory(at: URL(fileURLWithPath: path), includingPropertiesForKeys: keys, options: [.skipsHiddenFiles])
+
+        return urls.map { url in
+            let values = try? url.resourceValues(forKeys: Set(keys))
+            let isDirectory = values?.isDirectory ?? false
+            return ADBFileEntry(path: url.path, name: url.lastPathComponent, isDirectory: isDirectory)
+        }
+        .sorted { lhs, rhs in
+            if lhs.isDirectory != rhs.isDirectory {
+                return lhs.isDirectory && !rhs.isDirectory
+            }
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        }
+    }
+
+    private func joinRemotePath(base: String, name: String) -> String {
+        if base == "/" {
+            return "/\(name)"
+        }
+        return base.hasSuffix("/") ? base + name : base + "/" + name
+    }
+
+    private func joinLocalPath(base: String, name: String) -> String {
+        URL(fileURLWithPath: base).appendingPathComponent(name).path
     }
 
     private func appendLog(_ entry: String) {

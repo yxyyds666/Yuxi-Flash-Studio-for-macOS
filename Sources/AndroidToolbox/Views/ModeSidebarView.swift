@@ -19,7 +19,7 @@ struct ModeSidebarView: View {
                 title: "ADB 工具箱",
                 section: .adb,
                 targetMode: .adb,
-                items: ["设备列表", "快速重启"]
+                items: ["快速重启", "文件管理"]
             )
 
             sectionCard(
