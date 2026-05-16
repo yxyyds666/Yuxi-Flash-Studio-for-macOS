@@ -235,24 +235,24 @@ struct ADBPanelView: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(spacing: 8) {
                 Image(systemName: systemImage)
-                    .font(.title2)
+                    .font(.system(size: 24, weight: .semibold))
                     .foregroundStyle(tint)
 
-                Spacer(minLength: 0)
-
                 Text(title)
-                    .font(.headline)
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
 
                 Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
+                    .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity, minHeight: 108, alignment: .topLeading)
-            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 108, alignment: .center)
+            .padding(10)
             .background(LiquidGlassTheme.cardBackground)
             .overlay {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
