@@ -52,6 +52,6 @@ struct ModeSidebarView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AnimatedGlassButtonStyle())
     }
 }

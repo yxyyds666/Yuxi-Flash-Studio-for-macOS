@@ -261,7 +261,7 @@ struct ADBPanelView: View {
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 2)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AnimatedGlassButtonStyle())
     }
 
     private var appManagementSection: some View {
@@ -386,7 +386,7 @@ struct ADBPanelView: View {
                                         .background(viewModel.uninstallPackageName == app.packageName ? LiquidGlassTheme.cardBackground : AnyShapeStyle(Color.clear))
                                         .clipShape(RoundedRectangle(cornerRadius: 6))
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(AnimatedGlassButtonStyle())
                                 }
                             }
                         }
@@ -488,7 +488,7 @@ struct ADBPanelView: View {
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(AnimatedGlassButtonStyle())
                             }
                         }
                     }
@@ -631,7 +631,7 @@ struct ADBPanelView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AnimatedGlassButtonStyle())
     }
 
     private func rebootTile(for action: ADBRebootAction) -> some View {
@@ -657,7 +657,7 @@ struct ADBPanelView: View {
             .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
             .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 2)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AnimatedGlassButtonStyle())
     }
 
     private func titleForRoute(_ route: ADBPanelRoute) -> String {
