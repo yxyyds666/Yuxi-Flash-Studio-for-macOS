@@ -89,8 +89,6 @@ struct ADBPanelView: View {
                 rebootSection
 
                 featureEntrySection
-
-                deviceListSection
             }
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
