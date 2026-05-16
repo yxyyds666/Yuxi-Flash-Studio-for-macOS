@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ModeSidebarView: View {
     @Binding var mode: ToolboxMode
+    var onEDLTap: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -24,7 +25,11 @@ struct ModeSidebarView: View {
 
     private func modeButton(title: String, targetMode: ToolboxMode) -> some View {
         Button {
-            mode = targetMode
+            if targetMode == .edl {
+                onEDLTap?()
+            } else {
+                mode = targetMode
+            }
         } label: {
             HStack {
                 Text(title)

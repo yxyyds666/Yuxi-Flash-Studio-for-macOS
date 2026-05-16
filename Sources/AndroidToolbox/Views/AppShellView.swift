@@ -6,6 +6,7 @@ struct AppShellView: View {
     @State private var adbViewModel: ADBViewModel
     @State private var fastbootViewModel: FastbootViewModel
     @State private var edlViewModel: EDLViewModel
+    @State private var showEDLAlert = false
 
     init() {
         let logStore = AppLogStore()
@@ -54,6 +55,11 @@ struct AppShellView: View {
         }
         .frame(width: 1280, height: 860)
         .background(WindowConfigurator())
+        .alert("提示", isPresented: $showEDLAlert) {
+            Button("知道了", role: .cancel) {}
+        } message: {
+            Text("EDL 模块开发中，敬请期待")
+        }
     }
 
     @ViewBuilder
@@ -76,7 +82,7 @@ struct AppShellView: View {
                 adbDeviceManagementCard
             }
 
-            ModeSidebarView(mode: $mode)
+            ModeSidebarView(mode: $mode, onEDLTap: { showEDLAlert = true })
             Spacer()
         }
     }
