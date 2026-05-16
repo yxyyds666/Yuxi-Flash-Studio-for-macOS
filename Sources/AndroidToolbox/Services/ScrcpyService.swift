@@ -57,7 +57,7 @@ final class ScrcpyService {
             args += ["--max-size", "\(maxSize)"]
         }
         if let bitRate {
-            args += ["--bit-rate", "\(bitRate)M"]
+            args += ["--video-bit-rate", "\(bitRate)M"]
         }
         if turnScreenOff {
             args.append("--turn-screen-off")
