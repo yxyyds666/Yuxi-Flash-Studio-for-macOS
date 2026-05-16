@@ -88,6 +88,38 @@ func adbService_runShell_throwsCommandFailedWhenExitCodeNonZero() {
 }
 
 @Test
+func adbService_runShell_withSelectedSerial_injectsDashS() throws {
+    let runner = MockProcessRunner()
+    runner.nextResult = .init(output: "", exitCode: 0)
+
+    let service = ADBService(
+        runner: runner,
+        resolveExecutable: { URL(fileURLWithPath: "/tmp/adb") }
+    )
+    service.selectedSerial = "abc123"
+
+    _ = try service.runShell("id")
+
+    #expect(runner.capturedArguments == ["-s", "abc123", "shell", "id"])
+}
+
+@Test
+func adbService_runShell_withoutSelectedSerial_omitsDashS() throws {
+    let runner = MockProcessRunner()
+    runner.nextResult = .init(output: "", exitCode: 0)
+
+    let service = ADBService(
+        runner: runner,
+        resolveExecutable: { URL(fileURLWithPath: "/tmp/adb") }
+    )
+    service.selectedSerial = nil
+
+    _ = try service.runShell("id")
+
+    #expect(runner.capturedArguments == ["shell", "id"])
+}
+
+@Test
 func adbService_listRemoteDirectory_parsesAndSortsEntries() throws {
     let runner = MockProcessRunner()
     runner.nextResult = .init(

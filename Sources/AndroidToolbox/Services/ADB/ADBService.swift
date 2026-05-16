@@ -24,6 +24,8 @@ final class ADBService {
     private let runner: any ProcessRunning
     private let resolveExecutable: ADBExecutableResolver
 
+    var selectedSerial: String?
+
     init(
         runner: any ProcessRunning = ProcessRunner(),
         resolveExecutable: @escaping ADBExecutableResolver = ADBExecutableLocator.locate
@@ -112,7 +114,14 @@ final class ADBService {
             throw ADBServiceError.executableMissing
         }
 
-        let result = try runner.run(executable: executable, arguments: arguments, timeout: 20)
+        let effectiveArgs: [String]
+        if let serial = selectedSerial, serial != "-" {
+            effectiveArgs = ["-s", serial] + arguments
+        } else {
+            effectiveArgs = arguments
+        }
+
+        let result = try runner.run(executable: executable, arguments: effectiveArgs, timeout: 20)
         guard result.exitCode == 0 else {
             throw ADBServiceError.commandFailed(result.output)
         }

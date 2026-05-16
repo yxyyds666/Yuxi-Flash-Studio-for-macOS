@@ -124,7 +124,7 @@ final class ADBViewModel {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = false
-        panel.allowedFileTypes = ["apk"]
+        panel.allowedContentTypes = [.init(filenameExtension: "apk")!]
         panel.prompt = "选择 APK"
 
         if panel.runModal() == .OK, let url = panel.url {
@@ -212,6 +212,7 @@ final class ADBViewModel {
 
     func selectDevice(_ device: DeviceInfo) {
         selectedDevice = device
+        service.selectedSerial = device.serial == "-" ? nil : device.serial
         appendLog("[设备] 已切换：\(device.serial)（\(device.model)）")
     }
 
@@ -274,6 +275,7 @@ final class ADBViewModel {
             } else {
                 selectedDevice = list.devices.first ?? .disconnected
             }
+            service.selectedSerial = selectedDevice.serial == "-" ? nil : selectedDevice.serial
 
             if showLog {
                 appendLog("[设备] 刷新完成：共 \(list.devices.count) 台")
