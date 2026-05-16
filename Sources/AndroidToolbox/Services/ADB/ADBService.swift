@@ -60,19 +60,31 @@ final class ADBService: @unchecked Sendable {
     }
 
     func listThirdPartyPackages() throws -> [InstalledApp] {
-        let raw = try run(arguments: ["shell", "pm", "list", "packages", "-3"], timeout: 30)
-        let packages = raw
-            .split(separator: "\n")
-            .map(String.init)
-            .compactMap { line -> String? in
-                let trimmed = line.trimmingCharacters(in: .whitespaces)
-                guard trimmed.hasPrefix("package:") else { return nil }
-                return String(trimmed.dropFirst("package:".count))
-            }
+        var packages: [String] = []
+        do {
+            let raw = try run(arguments: ["shell", "pm", "list", "packages", "-3"], timeout: 30)
+            packages = raw
+                .split(separator: "\n")
+                .map(String.init)
+                .compactMap { line -> String? in
+                    let trimmed = line.trimmingCharacters(in: .whitespaces)
+                    guard trimmed.hasPrefix("package:") else { return nil }
+                    return String(trimmed.dropFirst("package:".count))
+                }
+        } catch {
+            throw error
+        }
 
         guard !packages.isEmpty else { return [] }
 
-        let dumpsys = try run(arguments: ["shell", "dumpsys", "package", "packages"], timeout: 60)
+        let dumpsys: String
+        do {
+            dumpsys = try run(arguments: ["shell", "dumpsys", "package", "packages"], timeout: 120)
+        } catch {
+            return packages.map { InstalledApp(packageName: $0, appName: $0) }
+                .sorted { $0.appName.localizedCaseInsensitiveCompare($1.appName) == .orderedAscending }
+        }
+
         var labelMap: [String: String] = [:]
         var currentPkg: String?
         for line in dumpsys.split(separator: "\n").map(String.init) {
