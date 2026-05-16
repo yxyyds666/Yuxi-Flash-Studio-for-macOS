@@ -4,6 +4,7 @@ enum ADBPanelRoute: Hashable {
     case home
     case fileManager
     case appManagement
+    case scrcpy
 }
 
 struct ADBPanelView: View {
@@ -32,6 +33,8 @@ struct ADBPanelView: View {
                 fileManagementSection
             case .appManagement:
                 appManagementSection
+            case .scrcpy:
+                scrcpySection
             }
         }
         .padding(20)
@@ -83,6 +86,10 @@ struct ADBPanelView: View {
                     Text("安装与卸载应用")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                case .scrcpy:
+                    Text("通过 scrcpy 进行设备投屏")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
 
@@ -129,8 +136,70 @@ struct ADBPanelView: View {
                     tint: .green,
                     action: { route = .appManagement }
                 )
+
+                featureTile(
+                    title: "投屏",
+                    subtitle: "scrcpy 实时投屏",
+                    systemImage: "display.2",
+                    tint: .blue,
+                    action: { route = .scrcpy }
+                )
             }
         }
+    }
+
+    private var scrcpySection: some View {
+        VStack(spacing: 16) {
+            Spacer(minLength: 0)
+
+            GroupBox {
+                VStack(spacing: 14) {
+                    Image(systemName: "display.2")
+                        .font(.system(size: 34))
+                        .foregroundStyle(.blue)
+
+                    Text("ADB 投屏 (scrcpy)")
+                        .font(.headline)
+
+                    HStack(spacing: 16) {
+                        Stepper("最大分辨率：\(viewModel.scrcpyMaxSize)", value: $viewModel.scrcpyMaxSize, in: 640...2560, step: 64)
+                        Stepper("码率：\(viewModel.scrcpyBitRate) Mbps", value: $viewModel.scrcpyBitRate, in: 2...32)
+                    }
+
+                    Toggle("投屏时关闭手机屏幕", isOn: $viewModel.scrcpyTurnScreenOff)
+                        .toggleStyle(.switch)
+
+                    HStack(spacing: 12) {
+                        Button {
+                            viewModel.startScrcpy()
+                        } label: {
+                            Label("启动投屏", systemImage: "play.fill")
+                                .frame(maxWidth: 140)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(viewModel.isScrcpyRunning)
+
+                        Button {
+                            viewModel.stopScrcpy()
+                        } label: {
+                            Label("停止投屏", systemImage: "stop.fill")
+                                .frame(maxWidth: 140)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(!viewModel.isScrcpyRunning)
+                    }
+
+                    Text(viewModel.isScrcpyRunning ? "投屏进行中" : "当前未投屏")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 10)
+            }
+            .frame(maxWidth: 760)
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func featureTile(
@@ -574,6 +643,8 @@ struct ADBPanelView: View {
             return "ADB · 文件管理"
         case .appManagement:
             return "ADB · 应用管理"
+        case .scrcpy:
+            return "ADB · 投屏"
         }
     }
 

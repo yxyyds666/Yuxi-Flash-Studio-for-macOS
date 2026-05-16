@@ -38,6 +38,10 @@ final class ADBViewModel {
     var pushRemotePath: String = ""
     var logs: String = ""
     var isAutoRefreshing: Bool = false
+    var isScrcpyRunning: Bool = false
+    var scrcpyMaxSize: Int = 1024
+    var scrcpyBitRate: Int = 8
+    var scrcpyTurnScreenOff: Bool = false
 
     var localCurrentPath: String = NSHomeDirectory()
     var remoteCurrentPath: String = "/sdcard"
@@ -67,11 +71,13 @@ final class ADBViewModel {
     ]
 
     private let service: ADBService
+    private let scrcpyService: ScrcpyService
     private var refreshTimer: Timer?
     private let appLogStore: AppLogStore
 
-    init(service: ADBService = ADBService(), appLogStore: AppLogStore = AppLogStore()) {
+    init(service: ADBService = ADBService(), scrcpyService: ScrcpyService = ScrcpyService(), appLogStore: AppLogStore = AppLogStore()) {
         self.service = service
+        self.scrcpyService = scrcpyService
         self.appLogStore = appLogStore
     }
 
@@ -276,6 +282,24 @@ final class ADBViewModel {
                 }
             }
         }
+    }
+
+    func startScrcpy() {
+        do {
+            try scrcpyService.start(maxSize: scrcpyMaxSize, bitRate: scrcpyBitRate, turnScreenOff: scrcpyTurnScreenOff)
+            isScrcpyRunning = true
+            appendLog("[投屏] 已启动 scrcpy（\(scrcpyMaxSize)p / \(scrcpyBitRate)Mbps）")
+        } catch ScrcpyServiceError.executableMissing {
+            appendLog("[投屏] 失败：未找到 scrcpy，请执行 brew install scrcpy")
+        } catch {
+            appendLog("[投屏] 启动失败：\(error.localizedDescription)")
+        }
+    }
+
+    func stopScrcpy() {
+        scrcpyService.stop()
+        isScrcpyRunning = false
+        appendLog("[投屏] 已停止")
     }
 
     func pullFile() {
