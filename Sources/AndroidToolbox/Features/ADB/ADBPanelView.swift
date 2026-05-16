@@ -72,7 +72,7 @@ struct ADBPanelView: View {
             Spacer()
 
             if viewModel.isAutoRefreshing {
-                Label("实时刷新中", systemImage: "dot.radiowaves.left.and.right")
+                Label("搜索设备中", systemImage: "dot.radiowaves.left.and.right")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -110,7 +110,7 @@ struct ADBPanelView: View {
                             Text("文件管理")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
-                            Text("浏览本地与设备目录，并执行 Push / Pull")
+                            Text("可视化文件浏览")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -246,7 +246,7 @@ struct ADBPanelView: View {
                 }
                 .toggleStyle(.switch)
 
-                Text("Root 模式首版仅影响远程目录浏览，Push / Pull 仍使用普通 adb 传输。")
+                Text("以 Root 权限浏览")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
