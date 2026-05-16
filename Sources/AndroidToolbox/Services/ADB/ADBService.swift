@@ -20,7 +20,7 @@ enum ADBServiceError: Error {
 
 typealias ADBExecutableResolver = () -> URL?
 
-final class ADBService {
+final class ADBService: @unchecked Sendable {
     private let runner: any ProcessRunning
     private let resolveExecutable: ADBExecutableResolver
 

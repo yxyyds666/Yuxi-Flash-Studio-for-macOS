@@ -257,12 +257,24 @@ final class ADBViewModel {
     }
 
     func refreshInstalledPackages() {
-        do {
-            let apps = try service.listThirdPartyPackages()
-            installedApps = apps
-            appendLog("[应用列表] 已加载 \(apps.count) 个应用")
-        } catch {
-            appendLog("[应用列表] 读取失败：\(error.localizedDescription)")
+        installedApps = []
+        appendLog("[应用列表] 正在加载…")
+
+        let service = service
+        DispatchQueue.global().async { [weak self] in
+            guard let self else { return }
+            do {
+                let apps = try service.listThirdPartyPackages()
+                DispatchQueue.main.async {
+                    self.installedApps = apps
+                    self.appendLog("[应用列表] 已加载 \(apps.count) 个应用")
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.installedApps = []
+                    self.appendLog("[应用列表] 读取失败：\(error.localizedDescription)")
+                }
+            }
         }
     }
 
