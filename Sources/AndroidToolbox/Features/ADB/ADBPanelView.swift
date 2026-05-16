@@ -256,7 +256,7 @@ struct ADBPanelView: View {
                         .controlSize(.small)
                     }
 
-                    if viewModel.installedPackages.isEmpty {
+                    if viewModel.installedApps.isEmpty {
                         Text("点击刷新加载已安装应用列表")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -265,23 +265,31 @@ struct ADBPanelView: View {
                     } else {
                         ScrollView {
                             LazyVStack(alignment: .leading, spacing: 4) {
-                                ForEach(viewModel.installedPackages, id: \.self) { pkg in
+                                ForEach(viewModel.installedApps) { app in
                                     Button {
-                                        viewModel.uninstallPackageName = pkg
+                                        viewModel.uninstallPackageName = app.packageName
                                     } label: {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "shippingbox")
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "app.fill")
                                                 .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                            Text(pkg)
-                                                .font(.caption)
-                                                .foregroundStyle(.primary)
-                                                .lineLimit(1)
+                                                .foregroundStyle(.blue)
+
+                                            VStack(alignment: .leading, spacing: 1) {
+                                                Text(app.appName)
+                                                    .font(.caption.weight(.semibold))
+                                                    .foregroundStyle(.primary)
+                                                    .lineLimit(1)
+                                                Text(app.packageName)
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.tertiary)
+                                                    .lineLimit(1)
+                                            }
+
                                             Spacer()
                                         }
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(viewModel.uninstallPackageName == pkg ? LiquidGlassTheme.cardBackground : AnyShapeStyle(Color.clear))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(viewModel.uninstallPackageName == app.packageName ? LiquidGlassTheme.cardBackground : AnyShapeStyle(Color.clear))
                                         .clipShape(RoundedRectangle(cornerRadius: 6))
                                     }
                                     .buttonStyle(.plain)

@@ -17,6 +17,12 @@ struct ADBFileEntry: Identifiable {
     var id: String { path }
 }
 
+struct InstalledApp: Identifiable {
+    let packageName: String
+    let appName: String
+    var id: String { packageName }
+}
+
 @Observable
 @MainActor
 final class ADBViewModel {
@@ -25,9 +31,7 @@ final class ADBViewModel {
     var shellCommand: String = ""
     var apkPath: String = ""
     var uninstallPackageName: String = ""
-    var installedPackages: [String] = []
-    var permissionPackageName: String = ""
-    var permissionName: String = ""
+    var installedApps: [InstalledApp] = []
     var pullRemotePath: String = ""
     var pullLocalPath: String = ""
     var pushLocalPath: String = ""
@@ -254,44 +258,11 @@ final class ADBViewModel {
 
     func refreshInstalledPackages() {
         do {
-            let output = try service.listPackages(filter: nil)
-            let packages = output
-                .split(separator: "\n")
-                .map(String.init)
-                .compactMap { line -> String? in
-                    let trimmed = line.trimmingCharacters(in: .whitespaces)
-                    guard trimmed.hasPrefix("package:") else { return nil }
-                    return String(trimmed.dropFirst("package:".count))
-                }
-                .sorted()
-            installedPackages = packages
-            appendLog("[包列表] 已加载 \(packages.count) 个应用")
+            let apps = try service.listThirdPartyPackages()
+            installedApps = apps
+            appendLog("[应用列表] 已加载 \(apps.count) 个应用")
         } catch {
-            appendLog("[包列表] 读取失败：\(error.localizedDescription)")
-        }
-    }
-
-    func grantPermission() {
-        let pkg = permissionPackageName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let perm = permissionName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !pkg.isEmpty, !perm.isEmpty else { return }
-        do {
-            let result = try service.grantPermission(packageName: pkg, permission: perm)
-            appendLog("[授权] \(pkg) ← \(perm)\n\(result)")
-        } catch {
-            appendLog("[授权] 失败：\(error.localizedDescription)")
-        }
-    }
-
-    func revokePermission() {
-        let pkg = permissionPackageName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let perm = permissionName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !pkg.isEmpty, !perm.isEmpty else { return }
-        do {
-            let result = try service.revokePermission(packageName: pkg, permission: perm)
-            appendLog("[撤销] \(pkg) ← \(perm)\n\(result)")
-        } catch {
-            appendLog("[撤销] 失败：\(error.localizedDescription)")
+            appendLog("[应用列表] 读取失败：\(error.localizedDescription)")
         }
     }
 

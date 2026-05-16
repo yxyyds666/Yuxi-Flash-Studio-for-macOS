@@ -59,6 +59,42 @@ final class ADBService {
         return try run(arguments: args)
     }
 
+    func listThirdPartyPackages() throws -> [InstalledApp] {
+        let raw = try run(arguments: ["shell", "pm", "list", "packages", "-3"])
+        let packages = raw
+            .split(separator: "\n")
+            .map(String.init)
+            .compactMap { line -> String? in
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard trimmed.hasPrefix("package:") else { return nil }
+                return String(trimmed.dropFirst("package:".count))
+            }
+
+        guard !packages.isEmpty else { return [] }
+
+        let dumpsys = try run(arguments: ["shell", "dumpsys", "package", "packages"])
+        var labelMap: [String: String] = [:]
+        var currentPkg: String?
+        for line in dumpsys.split(separator: "\n").map(String.init) {
+            let t = line.trimmingCharacters(in: .whitespaces)
+            if t.hasPrefix("Package ["), let open = t.firstIndex(of: "["), let close = t.firstIndex(of: "]") {
+                currentPkg = String(t[t.index(after: open)..<close])
+            } else if t.hasPrefix("application-label:"), let pkg = currentPkg {
+                let label = t
+                    .replacingOccurrences(of: "application-label:", with: "")
+                    .trimmingCharacters(in: .whitespaces)
+                    .replacingOccurrences(of: "'", with: "")
+                labelMap[pkg] = label
+                currentPkg = nil
+            }
+        }
+
+        return packages.map { pkg in
+            InstalledApp(packageName: pkg, appName: labelMap[pkg] ?? pkg)
+        }
+        .sorted { $0.appName.localizedCaseInsensitiveCompare($1.appName) == .orderedAscending }
+    }
+
     func grantPermission(packageName: String, permission: String) throws -> String {
         try run(arguments: ["shell", "pm", "grant", packageName, permission])
     }
