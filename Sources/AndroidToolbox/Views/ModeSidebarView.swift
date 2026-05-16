@@ -5,7 +5,7 @@ struct ModeSidebarView: View {
     var onEDLTap: (() -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("工具箱")
                 .font(.headline)
 
@@ -13,11 +13,18 @@ struct ModeSidebarView: View {
             modeButton(title: "Fastboot 工具箱", targetMode: .fastboot)
             modeButton(title: "EDL 工具箱 (9008)", targetMode: .edl)
         }
-        .padding(10)
+        .padding(12)
         .background(LiquidGlassTheme.cardBackground)
+        .background(LiquidGlassTheme.cardTint)
         .overlay {
             RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
                 .stroke(LiquidGlassTheme.secondaryStroke, lineWidth: 1)
+        }
+        .overlay(alignment: .topLeading) {
+            RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                .fill(LiquidGlassTheme.glow)
+                .opacity(0.25)
+                .padding(1)
         }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
         .shadow(color: LiquidGlassTheme.secondaryShadow, radius: 8, y: 3)
@@ -38,7 +45,7 @@ struct ModeSidebarView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(mode == targetMode ? LiquidGlassTheme.cardBackground : AnyShapeStyle(Color.clear))
+            .background(mode == targetMode ? LiquidGlassTheme.cardBackground : AnyShapeStyle(Color.white.opacity(0.03)))
             .overlay {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(mode == targetMode ? LiquidGlassTheme.stroke : LiquidGlassTheme.secondaryStroke, lineWidth: 1)

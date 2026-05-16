@@ -19,9 +19,17 @@ struct AppShellView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color.pink.opacity(0.24), Color.purple.opacity(0.12), Color.black.opacity(0.14)],
+                colors: [Color.blue.opacity(0.18), Color.cyan.opacity(0.12), Color.black.opacity(0.16)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            RadialGradient(
+                colors: [Color.white.opacity(0.24), Color.clear],
+                center: .topLeading,
+                startRadius: 30,
+                endRadius: 520
             )
             .ignoresSafeArea()
 
@@ -45,9 +53,16 @@ struct AppShellView: View {
             }
             .padding(12)
             .background(LiquidGlassTheme.panelBackground)
+            .background(LiquidGlassTheme.shellTint)
             .overlay {
                 RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius + 4, style: .continuous)
                     .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+            }
+            .overlay(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius + 4, style: .continuous)
+                    .fill(LiquidGlassTheme.glow)
+                    .opacity(0.45)
+                    .padding(1)
             }
             .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius + 4, style: .continuous))
             .shadow(color: LiquidGlassTheme.shadow, radius: 18, y: 8)

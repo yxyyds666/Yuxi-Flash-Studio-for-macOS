@@ -41,9 +41,16 @@ struct HeaderView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(LiquidGlassTheme.cardBackground)
+        .background(LiquidGlassTheme.cardTint)
         .overlay {
             RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
                 .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+        }
+        .overlay(alignment: .topLeading) {
+            RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                .fill(LiquidGlassTheme.glow)
+                .opacity(0.35)
+                .padding(1)
         }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
         .shadow(color: LiquidGlassTheme.shadow, radius: 16, y: 8)
