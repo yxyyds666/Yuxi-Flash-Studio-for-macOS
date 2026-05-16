@@ -150,26 +150,44 @@ struct ADBPanelView: View {
     }
 
     private var scrcpySection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 18) {
             Spacer(minLength: 0)
 
             GroupBox {
-                VStack(spacing: 14) {
+                VStack(spacing: 16) {
                     Image(systemName: "display.2")
-                        .font(.system(size: 34))
+                        .font(.system(size: 36, weight: .semibold))
                         .foregroundStyle(.blue)
 
-                    Text("ADB 投屏 (scrcpy)")
-                        .font(.headline)
+                    Text("scrcpy 设备投屏")
+                        .font(.title3.bold())
+
+                    Text("以低延迟方式镜像 Android 屏幕，可按需调节性能与交互参数")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    Divider()
 
                     VStack(alignment: .leading, spacing: 8) {
                         Stepper("最大分辨率：\(viewModel.scrcpyMaxSize)", value: $viewModel.scrcpyMaxSize, in: 640...2560, step: 64)
                         Stepper("码率：\(viewModel.scrcpyBitRate) Mbps", value: $viewModel.scrcpyBitRate, in: 2...32)
+                        Stepper("最大帧率：\(viewModel.scrcpyMaxFPS) FPS", value: $viewModel.scrcpyMaxFPS, in: 15...120, step: 5)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Toggle("投屏时关闭手机屏幕", isOn: $viewModel.scrcpyTurnScreenOff)
-                        .toggleStyle(.switch)
+                    TextField("窗口标题", text: $viewModel.scrcpyWindowTitle)
+                        .textFieldStyle(.roundedBorder)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle("投屏时关闭手机屏幕", isOn: $viewModel.scrcpyTurnScreenOff)
+                        Toggle("全屏启动", isOn: $viewModel.scrcpyFullscreen)
+                        Toggle("窗口置顶", isOn: $viewModel.scrcpyAlwaysOnTop)
+                        Toggle("禁用音频", isOn: $viewModel.scrcpyNoAudio)
+                        Toggle("禁用控制（只看屏幕）", isOn: $viewModel.scrcpyNoControl)
+                        Toggle("显示触摸点", isOn: $viewModel.scrcpyShowTouches)
+                    }
+                    .toggleStyle(.switch)
 
                     HStack(spacing: 12) {
                         Button {
@@ -195,9 +213,17 @@ struct ADBPanelView: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(viewModel.isScrcpyRunning ? .green : .secondary)
                 }
-                .padding(.vertical, 10)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 6)
             }
             .frame(maxWidth: 760)
+            .background(LiquidGlassTheme.cardBackground)
+            .overlay {
+                RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
+                    .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
+            .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 3)
 
             Spacer(minLength: 0)
         }

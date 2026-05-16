@@ -42,6 +42,13 @@ final class ADBViewModel {
     var scrcpyMaxSize: Int = 1024
     var scrcpyBitRate: Int = 8
     var scrcpyTurnScreenOff: Bool = false
+    var scrcpyMaxFPS: Int = 60
+    var scrcpyFullscreen: Bool = false
+    var scrcpyAlwaysOnTop: Bool = false
+    var scrcpyNoAudio: Bool = false
+    var scrcpyNoControl: Bool = false
+    var scrcpyShowTouches: Bool = false
+    var scrcpyWindowTitle: String = "Yuxi Flash Studio"
 
     var localCurrentPath: String = NSHomeDirectory()
     var remoteCurrentPath: String = "/sdcard"
@@ -290,6 +297,13 @@ final class ADBViewModel {
                 maxSize: scrcpyMaxSize,
                 bitRate: scrcpyBitRate,
                 turnScreenOff: scrcpyTurnScreenOff,
+                maxFPS: scrcpyMaxFPS,
+                fullscreen: scrcpyFullscreen,
+                alwaysOnTop: scrcpyAlwaysOnTop,
+                noAudio: scrcpyNoAudio,
+                noControl: scrcpyNoControl,
+                showTouches: scrcpyShowTouches,
+                windowTitle: scrcpyWindowTitle,
                 onTerminate: { [weak self] status, output in
                     DispatchQueue.main.async {
                         guard let self else { return }

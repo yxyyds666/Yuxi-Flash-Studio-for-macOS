@@ -42,6 +42,13 @@ final class ScrcpyService {
         maxSize: Int? = nil,
         bitRate: Int? = nil,
         turnScreenOff: Bool = false,
+        maxFPS: Int? = nil,
+        fullscreen: Bool = false,
+        alwaysOnTop: Bool = false,
+        noAudio: Bool = false,
+        noControl: Bool = false,
+        showTouches: Bool = false,
+        windowTitle: String? = nil,
         onTerminate: ((Int32, String) -> Void)? = nil
     ) throws {
         guard let executable = locate() else {
@@ -61,6 +68,27 @@ final class ScrcpyService {
         }
         if turnScreenOff {
             args.append("--turn-screen-off")
+        }
+        if let maxFPS {
+            args += ["--max-fps", "\(maxFPS)"]
+        }
+        if fullscreen {
+            args.append("--fullscreen")
+        }
+        if alwaysOnTop {
+            args.append("--always-on-top")
+        }
+        if noAudio {
+            args.append("--no-audio")
+        }
+        if noControl {
+            args.append("--no-control")
+        }
+        if showTouches {
+            args.append("--show-touches")
+        }
+        if let windowTitle, !windowTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            args += ["--window-title", windowTitle]
         }
         args.append("--stay-awake")
 
