@@ -3,7 +3,7 @@ import SwiftUI
 enum ADBPanelRoute: Hashable {
     case home
     case fileManager
-    case apkInstall
+    case appManagement
 }
 
 struct ADBPanelView: View {
@@ -30,8 +30,8 @@ struct ADBPanelView: View {
                 homeContent
             case .fileManager:
                 fileManagementSection
-            case .apkInstall:
-                apkInstallSection
+            case .appManagement:
+                appManagementSection
             }
         }
         .padding(20)
@@ -79,8 +79,8 @@ struct ADBPanelView: View {
                     Text("浏览与传输设备文件")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                case .apkInstall:
-                    Text("选择 APK 文件并安装到设备")
+                case .appManagement:
+                    Text("安装、卸载应用与管理权限")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -123,11 +123,11 @@ struct ADBPanelView: View {
                 )
 
                 featureTile(
-                    title: "APK 安装",
-                    subtitle: "选择安装包并执行安装",
+                    title: "应用管理",
+                    subtitle: "安装、卸载、权限管理",
                     systemImage: "square.and.arrow.down.fill",
                     tint: .green,
-                    action: { route = .apkInstall }
+                    action: { route = .appManagement }
                 )
             }
         }
@@ -170,76 +170,183 @@ struct ADBPanelView: View {
         .buttonStyle(.plain)
     }
 
-    private var apkInstallSection: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            VStack(spacing: 24) {
-                Image(systemName: "square.and.arrow.down.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.green)
-                    .symbolEffect(.bounce, value: viewModel.apkPath)
-
-                Text("安装 APK")
-                    .font(.title2.bold())
-
-                VStack(spacing: 12) {
-                    HStack(spacing: 10) {
-                        Image(systemName: "app.fill")
-                            .foregroundStyle(.secondary)
-                        TextField("点击右侧按钮选择 APK 文件", text: $viewModel.apkPath)
-                            .textFieldStyle(.roundedBorder)
-                            .disabled(true)
-
-                        Button("浏览…") {
-                            viewModel.pickApkFile()
-                        }
-                        .buttonStyle(.bordered)
-                    }
-
-                    if !viewModel.apkPath.isEmpty {
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                                .font(.subheadline)
-                            Text(URL(fileURLWithPath: viewModel.apkPath).lastPathComponent)
-                                .font(.subheadline.weight(.medium))
-                            Text(byteCountFormatted(URL(fileURLWithPath: viewModel.apkPath)))
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    }
-
-                    Button(action: { viewModel.installApk() }) {
-                        Label("安装", systemImage: "arrow.down.to.line")
-                            .frame(maxWidth: 200)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(viewModel.apkPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
+    private var appManagementSection: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                installSection
+                uninstallSection
+                permissionSection
             }
-            .padding(40)
-            .background(LiquidGlassTheme.cardBackground)
-            .overlay {
-                RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous)
-                    .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
-            .shadow(color: LiquidGlassTheme.shadow, radius: 8, y: 2)
-
-            Spacer()
+            .padding(.vertical, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func byteCountFormatted(_ url: URL) -> String {
-        guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
-              let size = attrs[.size] as? Int64 else { return "" }
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: size)
+    private var installSection: some View {
+        GroupBox {
+            VStack(spacing: 16) {
+                Image(systemName: "square.and.arrow.down.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.green)
+                    .padding(.top, 4)
+
+                Text("安装 APK")
+                    .font(.headline)
+
+                HStack(spacing: 10) {
+                    TextField("选择 APK 文件", text: $viewModel.apkPath)
+                        .textFieldStyle(.roundedBorder)
+                        .disabled(true)
+
+                    Button("浏览…") {
+                        viewModel.pickApkFile()
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                if !viewModel.apkPath.isEmpty {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.caption)
+                        Text(URL(fileURLWithPath: viewModel.apkPath).lastPathComponent)
+                            .font(.caption.weight(.medium))
+                    }
+                }
+
+                Button(action: { viewModel.installApk() }) {
+                    Label("安装", systemImage: "arrow.down.to.line")
+                        .frame(maxWidth: 160)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(viewModel.apkPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+            .frame(maxWidth: 480)
+            .padding(.vertical, 12)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var uninstallSection: some View {
+        GroupBox {
+            VStack(spacing: 14) {
+                Image(systemName: "trash.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.red)
+                    .padding(.top, 4)
+
+                Text("卸载应用")
+                    .font(.headline)
+
+                HStack(spacing: 10) {
+                    TextField("输入包名（如 com.example.app）", text: $viewModel.uninstallPackageName)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button(action: { viewModel.uninstallApp() }) {
+                        Label("卸载", systemImage: "trash")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                    .disabled(viewModel.uninstallPackageName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("已安装应用")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Button("刷新列表") {
+                            viewModel.refreshInstalledPackages()
+                        }
+                        .controlSize(.small)
+                    }
+
+                    if viewModel.installedPackages.isEmpty {
+                        Text("点击刷新加载已安装应用列表")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 8)
+                    } else {
+                        ScrollView {
+                            LazyVStack(alignment: .leading, spacing: 4) {
+                                ForEach(viewModel.installedPackages, id: \.self) { pkg in
+                                    Button {
+                                        viewModel.uninstallPackageName = pkg
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "shippingbox")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text(pkg)
+                                                .font(.caption)
+                                                .foregroundStyle(.primary)
+                                                .lineLimit(1)
+                                            Spacer()
+                                        }
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(viewModel.uninstallPackageName == pkg ? LiquidGlassTheme.cardBackground : AnyShapeStyle(Color.clear))
+                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                        .frame(maxHeight: 160)
+                    }
+                }
+                .padding(10)
+                .background(LiquidGlassTheme.panelBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .frame(maxWidth: 480)
+            .padding(.vertical, 8)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var permissionSection: some View {
+        GroupBox {
+            VStack(spacing: 14) {
+                Image(systemName: "checkmark.shield.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.blue)
+                    .padding(.top, 4)
+
+                Text("权限管理")
+                    .font(.headline)
+
+                HStack(spacing: 10) {
+                    TextField("包名", text: $viewModel.permissionPackageName)
+                        .textFieldStyle(.roundedBorder)
+
+                    TextField("权限（如 android.permission.READ_EXTERNAL_STORAGE）", text: $viewModel.permissionName)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                HStack(spacing: 12) {
+                    Button(action: { viewModel.grantPermission() }) {
+                        Label("授予", systemImage: "checkmark.circle")
+                            .frame(maxWidth: 120)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.blue)
+                    .disabled(viewModel.permissionPackageName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.permissionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                    Button(action: { viewModel.revokePermission() }) {
+                        Label("撤销", systemImage: "xmark.circle")
+                            .frame(maxWidth: 120)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.orange)
+                    .disabled(viewModel.permissionPackageName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.permissionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .frame(maxWidth: 480)
+            .padding(.vertical, 12)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var fileManagementSection: some View {
@@ -506,8 +613,8 @@ struct ADBPanelView: View {
             return "ADB"
         case .fileManager:
             return "ADB · 文件管理"
-        case .apkInstall:
-            return "ADB · APK 安装"
+        case .appManagement:
+            return "ADB · 应用管理"
         }
     }
 

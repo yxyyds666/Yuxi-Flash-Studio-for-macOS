@@ -47,6 +47,26 @@ final class ADBService {
         try run(arguments: ["install", apkPath])
     }
 
+    func uninstall(packageName: String) throws -> String {
+        try run(arguments: ["uninstall", packageName])
+    }
+
+    func listPackages(filter: String?) throws -> String {
+        var args = ["shell", "pm", "list", "packages"]
+        if let filter, !filter.isEmpty {
+            args.append(contentsOf: ["-f", filter])
+        }
+        return try run(arguments: args)
+    }
+
+    func grantPermission(packageName: String, permission: String) throws -> String {
+        try run(arguments: ["shell", "pm", "grant", packageName, permission])
+    }
+
+    func revokePermission(packageName: String, permission: String) throws -> String {
+        try run(arguments: ["shell", "pm", "revoke", packageName, permission])
+    }
+
     func pull(remotePath: String, localPath: String) throws -> String {
         try run(arguments: ["pull", remotePath, localPath])
     }
