@@ -92,14 +92,14 @@ struct ADBPanelView: View {
     }
 
     private var homeContent: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                rebootSection
+        VStack(alignment: .leading, spacing: 16) {
+            rebootSection
 
-                featureEntrySection
-            }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            featureEntrySection
+
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var featureEntrySection: some View {

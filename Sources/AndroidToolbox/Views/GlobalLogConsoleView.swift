@@ -4,6 +4,8 @@ import AppKit
 struct GlobalLogConsoleView: View {
     @Bindable var logStore: AppLogStore
 
+    private let bottomAnchorID = "log-bottom"
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -18,13 +20,27 @@ struct GlobalLogConsoleView: View {
                 }
             }
 
-            ScrollView {
-                Text(logStore.combinedText.isEmpty ? "暂无运行日志" : logStore.combinedText)
-                    .font(.system(.caption, design: .monospaced))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(logStore.combinedText.isEmpty ? "暂无运行日志" : logStore.combinedText)
+                            .font(.system(.caption, design: .monospaced))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+
+                        Color.clear
+                            .frame(height: 1)
+                            .id(bottomAnchorID)
+                    }
+                }
+                .frame(maxHeight: .infinity)
+                .onAppear {
+                    scrollToBottom(using: proxy)
+                }
+                .onChange(of: logStore.entries.count) { _, _ in
+                    scrollToBottom(using: proxy)
+                }
             }
-            .frame(maxHeight: .infinity)
         }
         .padding(12)
         .background(LiquidGlassTheme.cardBackground)
@@ -34,6 +50,14 @@ struct GlobalLogConsoleView: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: LiquidGlassTheme.cornerRadius, style: .continuous))
         .shadow(color: LiquidGlassTheme.shadow, radius: 12, y: 6)
+    }
+
+    private func scrollToBottom(using proxy: ScrollViewProxy) {
+        DispatchQueue.main.async {
+            withAnimation(.easeOut(duration: 0.2)) {
+                proxy.scrollTo(bottomAnchorID, anchor: .bottom)
+            }
+        }
     }
 
     private func exportLogs() {
