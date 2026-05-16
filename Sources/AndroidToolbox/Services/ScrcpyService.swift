@@ -90,7 +90,9 @@ final class ScrcpyService {
         if let windowTitle, !windowTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             args += ["--window-title", windowTitle]
         }
-        args.append("--stay-awake")
+        if !noControl {
+            args.append("--stay-awake")
+        }
 
         let process = Process()
         process.executableURL = executable
