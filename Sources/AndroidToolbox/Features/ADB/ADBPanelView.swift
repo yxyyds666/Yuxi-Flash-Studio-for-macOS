@@ -152,49 +152,73 @@ struct ADBPanelView: View {
     private var scrcpySection: some View {
         GroupBox("scrcpy 投屏") {
             ScrollView {
-                HStack(alignment: .top, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Stepper("最大分辨率：\(viewModel.scrcpyMaxSize)", value: $viewModel.scrcpyMaxSize, in: 640...2560, step: 64)
-                        Stepper("码率：\(viewModel.scrcpyBitRate) Mbps", value: $viewModel.scrcpyBitRate, in: 2...32)
-                        Stepper("最大帧率：\(viewModel.scrcpyMaxFPS) FPS", value: $viewModel.scrcpyMaxFPS, in: 15...120, step: 5)
-
-                        TextField("窗口标题", text: $viewModel.scrcpyWindowTitle)
-                            .textFieldStyle(.roundedBorder)
-
-                        HStack(spacing: 10) {
-                            Button {
-                                viewModel.startScrcpy()
-                            } label: {
-                                Label("启动投屏", systemImage: "play.fill")
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .disabled(viewModel.isScrcpyRunning)
-
-                            Button {
-                                viewModel.stopScrcpy()
-                            } label: {
-                                Label("停止投屏", systemImage: "stop.fill")
-                            }
-                            .buttonStyle(.bordered)
-                            .disabled(!viewModel.isScrcpyRunning)
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(spacing: 10) {
+                        Button("流畅") {
+                            viewModel.scrcpyMaxSize = 1024
+                            viewModel.scrcpyBitRate = 6
+                            viewModel.scrcpyMaxFPS = 30
                         }
-
-                        Text(viewModel.isScrcpyRunning ? "投屏进行中" : "当前未投屏")
-                            .font(.caption)
-                            .foregroundStyle(viewModel.isScrcpyRunning ? .green : .secondary)
+                        .buttonStyle(.bordered)
+                        Button("均衡") {
+                            viewModel.scrcpyMaxSize = 1440
+                            viewModel.scrcpyBitRate = 10
+                            viewModel.scrcpyMaxFPS = 60
+                        }
+                        .buttonStyle(.bordered)
+                        Button("高清") {
+                            viewModel.scrcpyMaxSize = 1920
+                            viewModel.scrcpyBitRate = 16
+                            viewModel.scrcpyMaxFPS = 60
+                        }
+                        .buttonStyle(.bordered)
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Toggle("投屏时关闭手机屏幕", isOn: $viewModel.scrcpyTurnScreenOff)
-                        Toggle("全屏启动", isOn: $viewModel.scrcpyFullscreen)
-                        Toggle("窗口置顶", isOn: $viewModel.scrcpyAlwaysOnTop)
-                        Toggle("禁用音频", isOn: $viewModel.scrcpyNoAudio)
-                        Toggle("禁用控制（只看屏幕）", isOn: $viewModel.scrcpyNoControl)
-                        Toggle("显示触摸点", isOn: $viewModel.scrcpyShowTouches)
+                    HStack(alignment: .top, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Stepper("分辨率：\(viewModel.scrcpyMaxSize)", value: $viewModel.scrcpyMaxSize, in: 640...2560, step: 64)
+                            Stepper("码率：\(viewModel.scrcpyBitRate) Mbps", value: $viewModel.scrcpyBitRate, in: 2...32)
+                            Stepper("帧率：\(viewModel.scrcpyMaxFPS) FPS", value: $viewModel.scrcpyMaxFPS, in: 15...120, step: 5)
+
+                            TextField("窗口标题", text: $viewModel.scrcpyWindowTitle)
+                                .textFieldStyle(.roundedBorder)
+
+                            HStack(spacing: 10) {
+                                Button {
+                                    viewModel.startScrcpy()
+                                } label: {
+                                    Label("启动投屏", systemImage: "play.fill")
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .disabled(viewModel.isScrcpyRunning)
+
+                                Button {
+                                    viewModel.stopScrcpy()
+                                } label: {
+                                    Label("停止投屏", systemImage: "stop.fill")
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(!viewModel.isScrcpyRunning)
+                            }
+
+                            Text(viewModel.isScrcpyRunning ? "状态：投屏中" : "状态：未启动")
+                                .font(.caption)
+                                .foregroundStyle(viewModel.isScrcpyRunning ? .green : .secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Toggle("关闭手机屏幕", isOn: $viewModel.scrcpyTurnScreenOff)
+                            Toggle("全屏启动", isOn: $viewModel.scrcpyFullscreen)
+                            Toggle("窗口置顶", isOn: $viewModel.scrcpyAlwaysOnTop)
+                            Toggle("禁用音频", isOn: $viewModel.scrcpyNoAudio)
+                            Toggle("只读模式（禁控制）", isOn: $viewModel.scrcpyNoControl)
+                            Toggle("显示触摸点", isOn: $viewModel.scrcpyShowTouches)
+                        }
+                        .toggleStyle(.switch)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                     }
-                    .toggleStyle(.switch)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
                 .padding(.vertical, 6)
             }
