@@ -161,10 +161,11 @@ struct ADBPanelView: View {
                     Text("ADB 投屏 (scrcpy)")
                         .font(.headline)
 
-                    HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Stepper("最大分辨率：\(viewModel.scrcpyMaxSize)", value: $viewModel.scrcpyMaxSize, in: 640...2560, step: 64)
                         Stepper("码率：\(viewModel.scrcpyBitRate) Mbps", value: $viewModel.scrcpyBitRate, in: 2...32)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                     Toggle("投屏时关闭手机屏幕", isOn: $viewModel.scrcpyTurnScreenOff)
                         .toggleStyle(.switch)
@@ -190,8 +191,8 @@ struct ADBPanelView: View {
                     }
 
                     Text(viewModel.isScrcpyRunning ? "投屏进行中" : "当前未投屏")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(viewModel.isScrcpyRunning ? .green : .secondary)
                 }
                 .padding(.vertical, 10)
             }

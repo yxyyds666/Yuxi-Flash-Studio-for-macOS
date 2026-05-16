@@ -286,11 +286,32 @@ final class ADBViewModel {
 
     func startScrcpy() {
         do {
-            try scrcpyService.start(maxSize: scrcpyMaxSize, bitRate: scrcpyBitRate, turnScreenOff: scrcpyTurnScreenOff)
+            try scrcpyService.start(
+                maxSize: scrcpyMaxSize,
+                bitRate: scrcpyBitRate,
+                turnScreenOff: scrcpyTurnScreenOff,
+                onTerminate: { [weak self] status, output in
+                    DispatchQueue.main.async {
+                        guard let self else { return }
+                        self.isScrcpyRunning = false
+                        if status != 0 {
+                            let message = output.trimmingCharacters(in: .whitespacesAndNewlines)
+                            let finalMessage = message.isEmpty ? "无错误输出" : message
+                            self.appendLog("[投屏] 已退出（code=\(status)）\n\(finalMessage)")
+                        } else {
+                            self.appendLog("[投屏] 已退出")
+                        }
+                    }
+                }
+            )
             isScrcpyRunning = true
             appendLog("[投屏] 已启动 scrcpy（\(scrcpyMaxSize)p / \(scrcpyBitRate)Mbps）")
         } catch ScrcpyServiceError.executableMissing {
             appendLog("[投屏] 失败：未找到 scrcpy，请执行 brew install scrcpy")
+        } catch ScrcpyServiceError.launchFailed(let detail) {
+            let message = detail.trimmingCharacters(in: .whitespacesAndNewlines)
+            let finalMessage = message.isEmpty ? "未知错误" : message
+            appendLog("[投屏] 启动失败：\(finalMessage)")
         } catch {
             appendLog("[投屏] 启动失败：\(error.localizedDescription)")
         }

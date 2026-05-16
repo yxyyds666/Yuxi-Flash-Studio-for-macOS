@@ -7,6 +7,7 @@ enum ScrcpyServiceError: Error {
 
 final class ScrcpyService {
     private var process: Process?
+    private var outputPipe: Pipe?
 
     var isRunning: Bool {
         process?.isRunning ?? false
@@ -37,9 +38,18 @@ final class ScrcpyService {
         return nil
     }
 
-    func start(maxSize: Int? = nil, bitRate: Int? = nil, turnScreenOff: Bool = false) throws {
+    func start(
+        maxSize: Int? = nil,
+        bitRate: Int? = nil,
+        turnScreenOff: Bool = false,
+        onTerminate: ((Int32, String) -> Void)? = nil
+    ) throws {
         guard let executable = locate() else {
             throw ScrcpyServiceError.executableMissing
+        }
+
+        if process?.isRunning == true {
+            return
         }
 
         var args: [String] = []
@@ -57,10 +67,30 @@ final class ScrcpyService {
         let process = Process()
         process.executableURL = executable
         process.arguments = args
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        outputPipe = pipe
 
         do {
             try process.run()
+            Thread.sleep(forTimeInterval: 0.35)
+            if !process.isRunning {
+                let outputData = pipe.fileHandleForReading.readDataToEndOfFile()
+                let output = String(decoding: outputData, as: UTF8.self)
+                throw ScrcpyServiceError.launchFailed(output.isEmpty ? "scrcpy exited immediately" : output)
+            }
             self.process = process
+            if let onTerminate {
+                Thread.detachNewThread {
+                    process.waitUntilExit()
+                    let outputData = pipe.fileHandleForReading.readDataToEndOfFile()
+                    let output = String(decoding: outputData, as: UTF8.self)
+                    onTerminate(process.terminationStatus, output)
+                }
+            }
+        } catch let error as ScrcpyServiceError {
+            throw error
         } catch {
             throw ScrcpyServiceError.launchFailed(error.localizedDescription)
         }
@@ -69,5 +99,6 @@ final class ScrcpyService {
     func stop() {
         process?.terminate()
         process = nil
+        outputPipe = nil
     }
 }
