@@ -3,6 +3,7 @@ import SwiftUI
 enum ADBPanelRoute: Hashable {
     case home
     case fileManager
+    case apkInstall
 }
 
 struct ADBPanelView: View {
@@ -15,6 +16,11 @@ struct ADBPanelView: View {
         GridItem(.flexible(), spacing: 10)
     ]
 
+    private let featureColumns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             headerRow
@@ -24,6 +30,8 @@ struct ADBPanelView: View {
                 homeContent
             case .fileManager:
                 fileManagementSection
+            case .apkInstall:
+                apkInstallSection
             }
         }
         .padding(20)
@@ -72,7 +80,7 @@ struct ADBPanelView: View {
             Spacer()
 
             if viewModel.isAutoRefreshing {
-                Label("实时刷新中", systemImage: "dot.radiowaves.left.and.right")
+                Label("搜索设备中", systemImage: "dot.radiowaves.left.and.right")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -96,41 +104,100 @@ struct ADBPanelView: View {
 
     private var featureEntrySection: some View {
         GroupBox("ADB 功能") {
-            VStack(alignment: .leading, spacing: 10) {
-                Button {
-                    route = .fileManager
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "folder.fill")
-                            .font(.title3)
-                            .foregroundStyle(Color.yellow)
-                            .frame(width: 28)
+            LazyVGrid(columns: featureColumns, spacing: 12) {
+                featureTile(
+                    title: "文件管理",
+                    subtitle: "可视化文件浏览",
+                    systemImage: "folder.fill",
+                    tint: .yellow,
+                    action: { route = .fileManager }
+                )
 
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("文件管理")
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                            Text("浏览本地与设备目录，并执行 Push / Pull")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(14)
-                    .background(LiquidGlassTheme.cardBackground)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-                .buttonStyle(.plain)
+                featureTile(
+                    title: "APK 安装",
+                    subtitle: "选择安装包并执行安装",
+                    systemImage: "square.and.arrow.down.fill",
+                    tint: .green,
+                    action: { route = .apkInstall }
+                )
             }
         }
+    }
+
+    private func featureTile(
+        title: String,
+        subtitle: String,
+        systemImage: String,
+        tint: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.title2)
+                    .foregroundStyle(tint)
+
+                Spacer(minLength: 0)
+
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
+            .padding(14)
+            .background(LiquidGlassTheme.cardBackground)
+            .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(LiquidGlassTheme.stroke, lineWidth: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .shadow(color: LiquidGlassTheme.shadow, radius: 10, y: 3)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var apkInstallSection: some View {
+        GroupBox("APK 安装") {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 10) {
+                    TextField("选择 APK 文件路径", text: $viewModel.apkPath)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button("选择 APK") {
+                        viewModel.pickApkFile()
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("当前选择")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(viewModel.apkPath.isEmpty ? "未选择 APK" : viewModel.apkPath)
+                        .font(.caption)
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                }
+
+                Button("安装 APK") {
+                    viewModel.installApk()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(viewModel.apkPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Text("安装输出会写入下方全局日志。")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
     }
 
     private var fileManagementSection: some View {
@@ -246,7 +313,7 @@ struct ADBPanelView: View {
                 }
                 .toggleStyle(.switch)
 
-                Text("Root 模式首版仅影响远程目录浏览，Push / Pull 仍使用普通 adb 传输。")
+                Text("以 Root 权限浏览")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -397,6 +464,8 @@ struct ADBPanelView: View {
             return "ADB"
         case .fileManager:
             return "ADB · 文件管理"
+        case .apkInstall:
+            return "ADB · APK 安装"
         }
     }
 

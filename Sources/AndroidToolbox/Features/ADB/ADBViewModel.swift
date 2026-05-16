@@ -119,6 +119,20 @@ final class ADBViewModel {
         }
     }
 
+    func pickApkFile() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.allowedFileTypes = ["apk"]
+        panel.prompt = "选择 APK"
+
+        if panel.runModal() == .OK, let url = panel.url {
+            apkPath = url.path
+            appendLog("[安装] 已选择 APK：\(url.lastPathComponent)")
+        }
+    }
+
     func refreshLocalDirectory() {
         do {
             localEntries = try loadLocalEntries(path: localCurrentPath)
