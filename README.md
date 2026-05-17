@@ -18,7 +18,9 @@ Yuxi Flash Studio 是一个面向 macOS 的安卓工具箱，集成 **ADB / Fast
 
 ### scrcpy 依赖
 
-ADB 投屏功能依赖本机已安装 `scrcpy`：
+ADB 投屏已内置 `scrcpy`（包含 `scrcpy` 与 `scrcpy-server`），开箱可用。
+
+如需使用系统版本作为兜底，也可手动安装：
 
 ```bash
 brew install scrcpy
@@ -62,7 +64,9 @@ Yuxi Flash Studio is a macOS Android toolbox that integrates common **ADB / Fast
 
 ### scrcpy dependency
 
-ADB screen mirroring requires `scrcpy` installed locally:
+ADB screen mirroring now bundles `scrcpy` (`scrcpy` + `scrcpy-server`) inside the app resources out of the box.
+
+You may still install a system fallback version if needed:
 
 ```bash
 brew install scrcpy

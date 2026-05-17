@@ -14,6 +14,10 @@ final class ScrcpyService {
     }
 
     func locate() -> URL? {
+        if let bundled = Bundle.module.url(forResource: "scrcpy", withExtension: nil, subdirectory: "Tools") {
+            return bundled
+        }
+
         let candidates = [
             "/opt/homebrew/bin/scrcpy",
             "/usr/local/bin/scrcpy",
@@ -97,6 +101,13 @@ final class ScrcpyService {
         let process = Process()
         process.executableURL = executable
         process.arguments = args
+
+        if let bundledServer = Bundle.module.url(forResource: "scrcpy-server", withExtension: nil, subdirectory: "Tools") {
+            var env = ProcessInfo.processInfo.environment
+            env["SCRCPY_SERVER_PATH"] = bundledServer.path
+            process.environment = env
+        }
+
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = pipe
